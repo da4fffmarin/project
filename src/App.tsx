@@ -11,6 +11,10 @@ import FAQPage from './components/FAQPage';
 import SecretAdminPanel from './components/SecretAdminPanel';
 import TasksPage from './components/TasksPage';
 import SettingsPage from './components/SettingsPage';
+import AnalyticsDashboard from './components/AnalyticsDashboard';
+import PremiumFeatures from './components/PremiumFeatures';
+import TelegramBot from './components/TelegramBot';
+import ModernTheme from './components/ModernTheme';
 import { useApp } from './contexts/AppContext';
 
 // Компонент для отображения задач конкретного аирдропа
@@ -85,6 +89,10 @@ function AppContent() {
           <Route path="/admin" element={<AdminRoutes />} />
           <Route path="/rewards" element={<RewardsPage onBack={() => window.history.back()} />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/analytics" element={<AnalyticsDashboard />} />
+          <Route path="/premium" element={<PremiumFeatures />} />
+          <Route path="/telegram" element={<TelegramBot />} />
+          <Route path="/theme" element={<ModernTheme />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/airdrop" element={<AirdropTasksRoute />} />
@@ -101,6 +109,22 @@ function AppContent() {
         
         {/* Grid pattern overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:50px_50px]" />
+        
+        {/* Animated particles */}
+        <div className="absolute inset-0">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-purple-400/20 rounded-full animate-pulse"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${2 + Math.random() * 3}s`
+              }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

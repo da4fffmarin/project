@@ -2,7 +2,8 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import { useWallet } from '../hooks/useWallet';
-import { Settings, User, Coins, Shield, Wallet, LogOut, Gift, HelpCircle, Trophy, Menu, X } from 'lucide-react';
+import { Settings, User, Coins, Shield, Wallet, LogOut, Gift, HelpCircle, Trophy, Menu, X, BarChart3, Crown, MessageCircle } from 'lucide-react';
+import NotificationSystem from './NotificationSystem';
 
 export default function Header() {
   const { user, isAdmin, setIsAdmin } = useApp();
@@ -25,6 +26,9 @@ export default function Header() {
     { id: '/', label: 'Airdrops', icon: Coins },
     { id: '/rewards', label: 'Rewards', icon: Gift },
     { id: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+    { id: '/analytics', label: 'Analytics', icon: BarChart3 },
+    { id: '/premium', label: 'Premium', icon: Crown },
+    { id: '/telegram', label: 'Telegram', icon: MessageCircle },
     { id: '/faq', label: 'FAQ', icon: HelpCircle },
     ...(isAdmin ? [
       { id: '/admin', label: 'Admin', icon: Shield }
@@ -64,14 +68,14 @@ export default function Header() {
               <button
                 key={item.id}
                 onClick={() => navigate(item.id)}
-                className={`px-4 xl:px-6 py-2 xl:py-3 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2 ${
+                className={`px-3 xl:px-4 py-2 xl:py-3 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2 text-sm xl:text-base ${
                   isCurrentPath(item.id)
                     ? 'bg-gradient-to-r from-purple-500 to-blue-600 text-white shadow-lg shadow-purple-500/25 scale-105'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800/50 backdrop-blur-sm'
                 }`}
               >
                 <item.icon className="w-4 h-4" />
-                <span className="text-sm xl:text-base">{item.label}</span>
+                <span className="hidden xl:inline">{item.label}</span>
               </button>
             ))}
           </nav>
@@ -86,6 +90,9 @@ export default function Header() {
 
           {/* Desktop User Actions */}
           <div className="hidden lg:flex items-center space-x-3 xl:space-x-4">
+            {/* Notifications */}
+            <NotificationSystem />
+
             {/* Wallet Connection */}
             {walletState.isConnected ? (
               <div className="flex items-center space-x-3 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl px-3 xl:px-4 py-2">
