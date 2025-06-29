@@ -1,6 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AppProvider } from './contexts/AppContext';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
+import { AppProvider, useApp } from './contexts/AppContext';
 import { DesignProvider } from './contexts/DesignContext';
 import Layout from './components/Layout';
 import AirdropList from './components/AirdropList';
