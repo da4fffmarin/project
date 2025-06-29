@@ -1,145 +1,149 @@
 import { useState, useEffect } from 'react';
 import { Airdrop, User, WithdrawalHistory } from '../types';
 
-// MySQL-compatible database implementation using better-sqlite3 for WebContainer
+// SQL.js database implementation for browser compatibility
 let Database: any = null;
 let db: any = null;
 
 const initDatabase = async () => {
   if (!Database) {
-    // Import better-sqlite3 for MySQL-like functionality
-    const sqlite3 = await import('better-sqlite3');
-    Database = sqlite3.default;
+    // Import sql.js for browser-compatible SQLite
+    const initSqlJs = (await import('sql.js')).default;
+    const SQL = await initSqlJs({
+      locateFile: (file: string) => `/sql-wasm.wasm`
+    });
     
-    // Initialize database with MySQL-like structure
-    db = new Database(':memory:');
-    
-    // Enable foreign keys
-    db.pragma('foreign_keys = ON');
+    // Initialize database
+    db = new SQL.Database();
+    Database = SQL;
     
     // Create tables with MySQL-like syntax
-    db.exec(`
+    db.run(`
       CREATE TABLE IF NOT EXISTS airdrops (
-        id VARCHAR(255) PRIMARY KEY,
-        title VARCHAR(500) NOT NULL,
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
         description TEXT,
-        logo VARCHAR(10),
-        reward VARCHAR(100),
-        totalReward VARCHAR(100),
-        participants INT DEFAULT 0,
-        maxParticipants INT,
-        startDate DATETIME,
-        endDate DATETIME,
-        status ENUM('active', 'completed', 'upcoming') DEFAULT 'upcoming',
-        category VARCHAR(100),
-        blockchain VARCHAR(100),
-        tasks JSON,
-        requirements JSON,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        logo TEXT,
+        reward TEXT,
+        totalReward TEXT,
+        participants INTEGER DEFAULT 0,
+        maxParticipants INTEGER,
+        startDate TEXT,
+        endDate TEXT,
+        status TEXT DEFAULT 'upcoming' CHECK (status IN ('active', 'completed', 'upcoming')),
+        category TEXT,
+        blockchain TEXT,
+        tasks TEXT,
+        requirements TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     `);
     
-    db.exec(`
+    db.run(`
       CREATE TABLE IF NOT EXISTS users (
-        id VARCHAR(255) PRIMARY KEY,
-        walletAddress VARCHAR(255),
-        telegram VARCHAR(100),
-        twitter VARCHAR(100),
-        discord VARCHAR(100),
-        completedTasks JSON,
-        totalPoints INT DEFAULT 0,
-        isConnected BOOLEAN DEFAULT 0,
-        balance VARCHAR(50),
-        wallet VARCHAR(255),
-        joinedAt DATETIME,
-        lastActive DATETIME,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        INDEX idx_wallet (walletAddress),
-        INDEX idx_points (totalPoints),
-        INDEX idx_active (lastActive)
+        id TEXT PRIMARY KEY,
+        walletAddress TEXT,
+        telegram TEXT,
+        twitter TEXT,
+        discord TEXT,
+        completedTasks TEXT,
+        totalPoints INTEGER DEFAULT 0,
+        isConnected INTEGER DEFAULT 0,
+        balance TEXT,
+        wallet TEXT,
+        joinedAt TEXT,
+        lastActive TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     `);
     
-    db.exec(`
+    db.run(`CREATE INDEX IF NOT EXISTS idx_wallet ON users (walletAddress)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_points ON users (totalPoints)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_active ON users (lastActive)`);
+    
+    db.run(`
       CREATE TABLE IF NOT EXISTS withdrawals (
-        id VARCHAR(255) PRIMARY KEY,
-        userId VARCHAR(255),
-        username VARCHAR(255),
-        amount INT,
-        usdcAmount DECIMAL(10,2),
-        timestamp DATETIME,
-        status ENUM('pending', 'completed', 'failed') DEFAULT 'pending',
-        txHash VARCHAR(255),
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE,
-        INDEX idx_user (userId),
-        INDEX idx_status (status),
-        INDEX idx_timestamp (timestamp)
+        id TEXT PRIMARY KEY,
+        userId TEXT,
+        username TEXT,
+        amount INTEGER,
+        usdcAmount REAL,
+        timestamp TEXT,
+        status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed')),
+        txHash TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
       )
     `);
     
-    db.exec(`
+    db.run(`CREATE INDEX IF NOT EXISTS idx_user ON withdrawals (userId)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_status ON withdrawals (status)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_timestamp ON withdrawals (timestamp)`);
+    
+    db.run(`
       CREATE TABLE IF NOT EXISTS settings (
-        id INT PRIMARY KEY AUTOINCREMENT,
-        setting_key VARCHAR(255) UNIQUE NOT NULL,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        setting_key TEXT UNIQUE NOT NULL,
         setting_value TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     `);
     
-    db.exec(`
+    db.run(`
       CREATE TABLE IF NOT EXISTS admin_logs (
-        id INT PRIMARY KEY AUTOINCREMENT,
-        admin_id VARCHAR(255),
-        action VARCHAR(255),
-        target_type VARCHAR(100),
-        target_id VARCHAR(255),
-        details JSON,
-        ip_address VARCHAR(45),
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        INDEX idx_admin (admin_id),
-        INDEX idx_action (action),
-        INDEX idx_created (created_at)
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        admin_id TEXT,
+        action TEXT,
+        target_type TEXT,
+        target_id TEXT,
+        details TEXT,
+        ip_address TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
       )
     `);
     
-    db.exec(`
+    db.run(`CREATE INDEX IF NOT EXISTS idx_admin ON admin_logs (admin_id)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_action ON admin_logs (action)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_created ON admin_logs (created_at)`);
+    
+    db.run(`
       CREATE TABLE IF NOT EXISTS user_sessions (
-        id INT PRIMARY KEY AUTOINCREMENT,
-        user_id VARCHAR(255),
-        session_token VARCHAR(255) UNIQUE,
-        expires_at DATETIME,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-        INDEX idx_user (user_id),
-        INDEX idx_token (session_token),
-        INDEX idx_expires (expires_at)
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT,
+        session_token TEXT UNIQUE,
+        expires_at TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
       )
     `);
     
-    // Create triggers for updated_at timestamps (MySQL-like behavior)
-    db.exec(`
-      CREATE TRIGGER update_airdrops_timestamp 
+    db.run(`CREATE INDEX IF NOT EXISTS idx_user_session ON user_sessions (user_id)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_token ON user_sessions (session_token)`);
+    db.run(`CREATE INDEX IF NOT EXISTS idx_expires ON user_sessions (expires_at)`);
+    
+    // Create triggers for updated_at timestamps
+    db.run(`
+      CREATE TRIGGER IF NOT EXISTS update_airdrops_timestamp 
       AFTER UPDATE ON airdrops
       BEGIN
         UPDATE airdrops SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
       END
     `);
     
-    db.exec(`
-      CREATE TRIGGER update_users_timestamp 
+    db.run(`
+      CREATE TRIGGER IF NOT EXISTS update_users_timestamp 
       AFTER UPDATE ON users
       BEGIN
         UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
       END
     `);
     
-    db.exec(`
-      CREATE TRIGGER update_withdrawals_timestamp 
+    db.run(`
+      CREATE TRIGGER IF NOT EXISTS update_withdrawals_timestamp 
       AFTER UPDATE ON withdrawals
       BEGIN
         UPDATE withdrawals SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
@@ -147,15 +151,19 @@ const initDatabase = async () => {
     `);
     
     // Insert default settings
-    const insertSetting = db.prepare(`
-      INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES (?, ?)
-    `);
+    const settingsToInsert = [
+      ['points_to_usdc_rate', '100'],
+      ['min_withdrawal', '100'],
+      ['platform_fee', '0'],
+      ['max_daily_withdrawals', '10'],
+      ['maintenance_mode', 'false']
+    ];
     
-    insertSetting.run('points_to_usdc_rate', '100');
-    insertSetting.run('min_withdrawal', '100');
-    insertSetting.run('platform_fee', '0');
-    insertSetting.run('max_daily_withdrawals', '10');
-    insertSetting.run('maintenance_mode', 'false');
+    settingsToInsert.forEach(([key, value]) => {
+      db.run(`
+        INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES (?, ?)
+      `, [key, value]);
+    });
   }
 };
 
@@ -180,14 +188,12 @@ export function useMySQLDatabase() {
     if (!db) return false;
     
     try {
-      const stmt = db.prepare(`
+      db.run(`
         INSERT OR REPLACE INTO airdrops 
         (id, title, description, logo, reward, totalReward, participants, maxParticipants, 
          startDate, endDate, status, category, blockchain, tasks, requirements)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `);
-      
-      stmt.run(
+      `, [
         airdrop.id,
         airdrop.title,
         airdrop.description,
@@ -203,7 +209,7 @@ export function useMySQLDatabase() {
         airdrop.blockchain,
         JSON.stringify(airdrop.tasks),
         JSON.stringify(airdrop.requirements)
-      );
+      ]);
       
       return true;
     } catch (error) {
@@ -253,7 +259,13 @@ export function useMySQLDatabase() {
       }
       
       const stmt = db.prepare(query);
-      const rows = stmt.all(...params);
+      const result = stmt.getAsObject(params);
+      const rows: any[] = [];
+      
+      while (stmt.step()) {
+        rows.push(stmt.getAsObject());
+      }
+      stmt.free();
       
       return rows.map((row: any) => ({
         id: row.id,
@@ -283,27 +295,33 @@ export function useMySQLDatabase() {
     
     try {
       const stmt = db.prepare('SELECT * FROM airdrops WHERE id = ?');
-      const row = stmt.get(id);
+      stmt.bind([id]);
       
-      if (!row) return null;
+      if (stmt.step()) {
+        const row = stmt.getAsObject();
+        stmt.free();
+        
+        return {
+          id: row.id as string,
+          title: row.title as string,
+          description: row.description as string,
+          logo: row.logo as string,
+          reward: row.reward as string,
+          totalReward: row.totalReward as string,
+          participants: row.participants as number,
+          maxParticipants: row.maxParticipants as number,
+          startDate: row.startDate as string,
+          endDate: row.endDate as string,
+          status: row.status as string,
+          category: row.category as string,
+          blockchain: row.blockchain as string,
+          tasks: JSON.parse((row.tasks as string) || '[]'),
+          requirements: JSON.parse((row.requirements as string) || '[]')
+        };
+      }
       
-      return {
-        id: row.id,
-        title: row.title,
-        description: row.description,
-        logo: row.logo,
-        reward: row.reward,
-        totalReward: row.totalReward,
-        participants: row.participants,
-        maxParticipants: row.maxParticipants,
-        startDate: row.startDate,
-        endDate: row.endDate,
-        status: row.status,
-        category: row.category,
-        blockchain: row.blockchain,
-        tasks: JSON.parse(row.tasks || '[]'),
-        requirements: JSON.parse(row.requirements || '[]')
-      };
+      stmt.free();
+      return null;
     } catch (error) {
       console.error('Error getting airdrop by ID:', error);
       return null;
@@ -330,10 +348,8 @@ export function useMySQLDatabase() {
           return value;
         });
       
-      const stmt = db.prepare(`UPDATE airdrops SET ${fields} WHERE id = ?`);
-      const result = stmt.run(...values, id);
-      
-      return result.changes > 0;
+      db.run(`UPDATE airdrops SET ${fields} WHERE id = ?`, [...values, id]);
+      return true;
     } catch (error) {
       console.error('Error updating airdrop:', error);
       return false;
@@ -344,9 +360,8 @@ export function useMySQLDatabase() {
     if (!db) return false;
     
     try {
-      const stmt = db.prepare('DELETE FROM airdrops WHERE id = ?');
-      const result = stmt.run(id);
-      return result.changes > 0;
+      db.run('DELETE FROM airdrops WHERE id = ?', [id]);
+      return true;
     } catch (error) {
       console.error('Error deleting airdrop:', error);
       return false;
@@ -358,14 +373,12 @@ export function useMySQLDatabase() {
     if (!db) return false;
     
     try {
-      const stmt = db.prepare(`
+      db.run(`
         INSERT OR REPLACE INTO users 
         (id, walletAddress, telegram, twitter, discord, completedTasks, totalPoints, 
          isConnected, balance, wallet, joinedAt, lastActive)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `);
-      
-      stmt.run(
+      `, [
         user.id,
         user.walletAddress || '',
         user.telegram || '',
@@ -378,7 +391,7 @@ export function useMySQLDatabase() {
         user.wallet || '',
         user.joinedAt,
         user.lastActive
-      );
+      ]);
       
       return true;
     } catch (error) {
@@ -422,7 +435,13 @@ export function useMySQLDatabase() {
       }
       
       const stmt = db.prepare(query);
-      const rows = stmt.all(...params);
+      stmt.bind(params);
+      const rows: any[] = [];
+      
+      while (stmt.step()) {
+        rows.push(stmt.getAsObject());
+      }
+      stmt.free();
       
       return rows.map((row: any) => ({
         id: row.id,
@@ -449,24 +468,30 @@ export function useMySQLDatabase() {
     
     try {
       const stmt = db.prepare('SELECT * FROM users WHERE id = ?');
-      const row = stmt.get(id);
+      stmt.bind([id]);
       
-      if (!row) return null;
+      if (stmt.step()) {
+        const row = stmt.getAsObject();
+        stmt.free();
+        
+        return {
+          id: row.id as string,
+          walletAddress: row.walletAddress as string,
+          telegram: row.telegram as string,
+          twitter: row.twitter as string,
+          discord: row.discord as string,
+          completedTasks: JSON.parse((row.completedTasks as string) || '{}'),
+          totalPoints: row.totalPoints as number,
+          isConnected: Boolean(row.isConnected),
+          balance: row.balance as string,
+          wallet: row.wallet as string,
+          joinedAt: row.joinedAt as string,
+          lastActive: row.lastActive as string
+        };
+      }
       
-      return {
-        id: row.id,
-        walletAddress: row.walletAddress,
-        telegram: row.telegram,
-        twitter: row.twitter,
-        discord: row.discord,
-        completedTasks: JSON.parse(row.completedTasks || '{}'),
-        totalPoints: row.totalPoints,
-        isConnected: Boolean(row.isConnected),
-        balance: row.balance,
-        wallet: row.wallet,
-        joinedAt: row.joinedAt,
-        lastActive: row.lastActive
-      };
+      stmt.free();
+      return null;
     } catch (error) {
       console.error('Error getting user by ID:', error);
       return null;
@@ -477,13 +502,12 @@ export function useMySQLDatabase() {
     if (!db) return false;
     
     try {
-      const stmt = db.prepare(`
+      db.run(`
         UPDATE users 
         SET totalPoints = ?, lastActive = CURRENT_TIMESTAMP 
         WHERE id = ?
-      `);
-      const result = stmt.run(points, userId);
-      return result.changes > 0;
+      `, [points, userId]);
+      return true;
     } catch (error) {
       console.error('Error updating user points:', error);
       return false;
@@ -495,13 +519,11 @@ export function useMySQLDatabase() {
     if (!db) return false;
     
     try {
-      const stmt = db.prepare(`
+      db.run(`
         INSERT OR REPLACE INTO withdrawals 
         (id, userId, username, amount, usdcAmount, timestamp, status, txHash)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `);
-      
-      stmt.run(
+      `, [
         withdrawal.id,
         withdrawal.userId,
         withdrawal.username,
@@ -510,7 +532,7 @@ export function useMySQLDatabase() {
         withdrawal.timestamp,
         withdrawal.status,
         withdrawal.txHash || null
-      );
+      ]);
       
       return true;
     } catch (error) {
@@ -553,7 +575,13 @@ export function useMySQLDatabase() {
       }
       
       const stmt = db.prepare(query);
-      const rows = stmt.all(...params);
+      stmt.bind(params);
+      const rows: any[] = [];
+      
+      while (stmt.step()) {
+        rows.push(stmt.getAsObject());
+      }
+      stmt.free();
       
       return rows.map((row: any) => ({
         id: row.id,
@@ -586,10 +614,8 @@ export function useMySQLDatabase() {
         .filter(([key]) => key !== 'id')
         .map(([, value]) => value);
       
-      const stmt = db.prepare(`UPDATE withdrawals SET ${fields} WHERE id = ?`);
-      const result = stmt.run(...values, id);
-      
-      return result.changes > 0;
+      db.run(`UPDATE withdrawals SET ${fields} WHERE id = ?`, [...values, id]);
+      return true;
     } catch (error) {
       console.error('Error updating withdrawal:', error);
       return false;
@@ -600,9 +626,8 @@ export function useMySQLDatabase() {
     if (!db) return false;
     
     try {
-      const stmt = db.prepare('DELETE FROM withdrawals WHERE id = ?');
-      const result = stmt.run(id);
-      return result.changes > 0;
+      db.run('DELETE FROM withdrawals WHERE id = ?', [id]);
+      return true;
     } catch (error) {
       console.error('Error deleting withdrawal:', error);
       return false;
@@ -615,8 +640,16 @@ export function useMySQLDatabase() {
     
     try {
       const stmt = db.prepare('SELECT setting_value FROM settings WHERE setting_key = ?');
-      const row = stmt.get(key);
-      return row ? row.setting_value : null;
+      stmt.bind([key]);
+      
+      if (stmt.step()) {
+        const row = stmt.getAsObject();
+        stmt.free();
+        return row.setting_value as string;
+      }
+      
+      stmt.free();
+      return null;
     } catch (error) {
       console.error('Error getting setting:', error);
       return null;
@@ -627,11 +660,10 @@ export function useMySQLDatabase() {
     if (!db) return false;
     
     try {
-      const stmt = db.prepare(`
+      db.run(`
         INSERT OR REPLACE INTO settings (setting_key, setting_value) 
         VALUES (?, ?)
-      `);
-      stmt.run(key, value);
+      `, [key, value]);
       return true;
     } catch (error) {
       console.error('Error setting value:', error);
@@ -644,13 +676,37 @@ export function useMySQLDatabase() {
     if (!db) return null;
     
     try {
-      const totalAirdrops = db.prepare('SELECT COUNT(*) as count FROM airdrops').get().count;
-      const activeAirdrops = db.prepare("SELECT COUNT(*) as count FROM airdrops WHERE status = 'active'").get().count;
-      const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
-      const connectedUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE isConnected = 1').get().count;
-      const totalPoints = db.prepare('SELECT SUM(totalPoints) as total FROM users').get().total || 0;
-      const totalWithdrawals = db.prepare('SELECT COUNT(*) as count FROM withdrawals').get().count;
-      const pendingWithdrawals = db.prepare("SELECT COUNT(*) as count FROM withdrawals WHERE status = 'pending'").get().count;
+      const getCount = (query: string, params: any[] = []) => {
+        const stmt = db.prepare(query);
+        stmt.bind(params);
+        let result = 0;
+        if (stmt.step()) {
+          const row = stmt.getAsObject();
+          result = row.count as number || 0;
+        }
+        stmt.free();
+        return result;
+      };
+
+      const getSum = (query: string, params: any[] = []) => {
+        const stmt = db.prepare(query);
+        stmt.bind(params);
+        let result = 0;
+        if (stmt.step()) {
+          const row = stmt.getAsObject();
+          result = row.total as number || 0;
+        }
+        stmt.free();
+        return result;
+      };
+      
+      const totalAirdrops = getCount('SELECT COUNT(*) as count FROM airdrops');
+      const activeAirdrops = getCount("SELECT COUNT(*) as count FROM airdrops WHERE status = 'active'");
+      const totalUsers = getCount('SELECT COUNT(*) as count FROM users');
+      const connectedUsers = getCount('SELECT COUNT(*) as count FROM users WHERE isConnected = 1');
+      const totalPoints = getSum('SELECT SUM(totalPoints) as total FROM users');
+      const totalWithdrawals = getCount('SELECT COUNT(*) as count FROM withdrawals');
+      const pendingWithdrawals = getCount("SELECT COUNT(*) as count FROM withdrawals WHERE status = 'pending'");
       
       return {
         totalAirdrops,
@@ -673,19 +729,17 @@ export function useMySQLDatabase() {
     if (!db) return false;
     
     try {
-      const stmt = db.prepare(`
+      db.run(`
         INSERT INTO admin_logs (admin_id, action, target_type, target_id, details, ip_address)
         VALUES (?, ?, ?, ?, ?, ?)
-      `);
-      
-      stmt.run(
+      `, [
         adminId,
         action,
         targetType,
         targetId,
         details ? JSON.stringify(details) : null,
         '127.0.0.1' // WebContainer environment
-      );
+      ]);
       
       return true;
     } catch (error) {
@@ -699,7 +753,7 @@ export function useMySQLDatabase() {
     if (!db) return false;
     
     try {
-      db.exec('VACUUM');
+      db.run('VACUUM');
       return true;
     } catch (error) {
       console.error('Error vacuuming database:', error);
@@ -711,8 +765,8 @@ export function useMySQLDatabase() {
     if (!db) return null;
     
     try {
-      const backup = db.serialize();
-      return backup;
+      const data = db.export();
+      return data;
     } catch (error) {
       console.error('Error creating backup:', error);
       return null;
@@ -723,9 +777,9 @@ export function useMySQLDatabase() {
     return {
       status: connectionStatus,
       isInitialized,
-      databaseType: 'SQLite (MySQL-compatible)',
+      databaseType: 'SQLite (sql.js)',
       version: '3.x',
-      location: 'In-Memory'
+      location: 'In-Memory (Browser)'
     };
   };
 
