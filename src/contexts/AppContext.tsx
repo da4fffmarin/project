@@ -1,9 +1,9 @@
 import React, { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { useMySQLDatabase } from '../hooks/useMySQLDatabase';
+import { useDatabase } from '../hooks/useDatabase';
 import { useWallet } from '../hooks/useWallet';
 import { Airdrop, User, AdminStats, WithdrawalHistory } from '../types';
-import { mockAirdrops } from '../data/mockData';
+import { mockAirdrops, mockAdminStats } from '../data/mockData';
 
 interface AppContextType {
   airdrops: Airdrop[];
@@ -29,40 +29,29 @@ interface AppContextType {
   updateWithdrawal: (id: string, updates: Partial<WithdrawalHistory>) => void;
   deleteWithdrawal: (id: string) => void;
   getAllWithdrawals: () => WithdrawalHistory[];
-  databaseStatus: string;
-  refreshData: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [airdrops, setAirdrops] = useLocalStorage<Airdrop[]>('airdrops_cache', []);
-  const [connectedUsers, setConnectedUsers] = useLocalStorage<User[]>('users_cache', []);
+  const [airdrops, setAirdrops] = useLocalStorage<Airdrop[]>('airdrops', mockAirdrops);
+  const [connectedUsers, setConnectedUsers] = useLocalStorage<User[]>('connectedUsers', []);
   const [isAdmin, setIsAdmin] = useLocalStorage<boolean>('isAdmin', false);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useLocalStorage<boolean>('isAdminAuthenticated', false);
   const { walletState } = useWallet();
   
   const { 
     isInitialized, 
-    connectionStatus,
     saveAirdrop, 
     getAirdrops, 
-    getAirdropById,
-    updateAirdrop: dbUpdateAirdrop,
-    deleteAirdrop: dbDeleteAirdrop,
     saveUser, 
-    getUsers,
-    getUserById,
-    updateUserPoints: dbUpdateUserPoints,
+    getUsers, 
     saveWithdrawal,
     getWithdrawals,
     updateWithdrawal: dbUpdateWithdrawal,
     deleteWithdrawal: dbDeleteWithdrawal,
-    getAnalytics,
-    logAdminAction,
-    getSetting,
-    setSetting
-  } = useMySQLDatabase();
+    deleteAirdrop: dbDeleteAirdrop 
+  } = useDatabase();
   
   // Create initial user based on wallet connection
   const createInitialUser = (walletAddress?: string): User => ({
@@ -80,89 +69,39 @@ export function AppProvider({ children }: { children: ReactNode }) {
     lastActive: new Date().toISOString()
   });
 
-  const [user, setUser] = useLocalStorage<User>('user_cache', createInitialUser());
+  const [user, setUser] = useLocalStorage<User>('user', createInitialUser());
 
-  // Load data from MySQL database when initialized
+  // Load data from SQL database when initialized
   useEffect(() => {
     if (isInitialized) {
-      refreshData();
-      
-      // Initialize with mock data if database is empty
       const dbAirdrops = getAirdrops();
-      if (dbAirdrops.length === 0) {
-        console.log('Initializing database with mock data...');
-        mockAirdrops.forEach(airdrop => {
-          saveAirdrop(airdrop);
-          logAdminAction('system', 'CREATE', 'airdrop', airdrop.id, { title: airdrop.title });
-        });
-        refreshData();
+      const dbUsers = getUsers();
+      
+      if (dbAirdrops.length > 0) {
+        setAirdrops(dbAirdrops);
+      } else {
+        // Initialize with mock data
+        mockAirdrops.forEach(airdrop => saveAirdrop(airdrop));
+      }
+      
+      if (dbUsers.length > 0) {
+        setConnectedUsers(dbUsers);
       }
     }
   }, [isInitialized]);
 
-  const refreshData = () => {
-    if (!isInitialized) return;
-    
-    try {
-      // Load airdrops from database
-      const dbAirdrops = getAirdrops();
-      setAirdrops(dbAirdrops);
-      
-      // Load users from database
-      const dbUsers = getUsers();
-      setConnectedUsers(dbUsers);
-      
-      // Load current user if exists
-      if (walletState.address) {
-        const currentUser = getUserById(walletState.address);
-        if (currentUser) {
-          setUser(currentUser);
-        }
-      }
-    } catch (error) {
-      console.error('Error refreshing data:', error);
-    }
-  };
-
   // Get user-specific withdrawal history
   const withdrawalHistory = isInitialized ? getWithdrawals(user.id) : [];
 
-  // Calculate admin stats from database
-  const getAdminStats = (): AdminStats => {
-    if (!isInitialized) {
-      return {
-        totalAirdrops: 0,
-        activeAirdrops: 0,
-        totalUsers: 0,
-        connectedWallets: 0,
-        totalRewardsDistributed: '$0.00',
-        totalPointsEarned: 0
-      };
-    }
-    
-    const analytics = getAnalytics();
-    if (!analytics) {
-      return {
-        totalAirdrops: airdrops.length,
-        activeAirdrops: airdrops.filter(a => a.status === 'active').length,
-        totalUsers: connectedUsers.length,
-        connectedWallets: connectedUsers.filter(u => u.isConnected).length,
-        totalRewardsDistributed: `$${(connectedUsers.reduce((sum, u) => sum + u.totalPoints, 0) / 100).toFixed(2)}`,
-        totalPointsEarned: connectedUsers.reduce((sum, u) => sum + u.totalPoints, 0)
-      };
-    }
-    
-    return {
-      totalAirdrops: analytics.totalAirdrops,
-      activeAirdrops: analytics.activeAirdrops,
-      totalUsers: analytics.totalUsers,
-      connectedWallets: analytics.connectedUsers,
-      totalRewardsDistributed: analytics.totalRewardsDistributed,
-      totalPointsEarned: analytics.totalPoints
-    };
+  // Calculate admin stats based on real data
+  const adminStats: AdminStats = {
+    totalAirdrops: airdrops.length,
+    activeAirdrops: airdrops.filter(a => a.status === 'active').length,
+    totalUsers: connectedUsers.length,
+    connectedWallets: connectedUsers.filter(u => u.isConnected).length,
+    totalRewardsDistributed: `$${(connectedUsers.reduce((sum, u) => sum + u.totalPoints, 0) / 100).toFixed(2)}`,
+    totalPointsEarned: connectedUsers.reduce((sum, u) => sum + u.totalPoints, 0)
   };
-
-  const adminStats = getAdminStats();
 
   const updateUser = (updatedUser: User) => {
     const userWithTimestamp = {
@@ -171,20 +110,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
     
     setUser(userWithTimestamp);
-    
     if (isInitialized) {
       saveUser(userWithTimestamp);
-      refreshData();
     }
+    
+    // Update in connected users list
+    setConnectedUsers(prev => {
+      const existing = prev.find(u => u.id === userWithTimestamp.id);
+      if (existing) {
+        return prev.map(u => u.id === userWithTimestamp.id ? userWithTimestamp : u);
+      } else {
+        return [...prev, userWithTimestamp];
+      }
+    });
   };
 
   const updateUserPoints = (userId: string, newPoints: number) => {
-    if (isInitialized) {
-      dbUpdateUserPoints(userId, newPoints);
-      logAdminAction('admin', 'UPDATE_POINTS', 'user', userId, { newPoints });
-      refreshData();
-    }
-    
     // Update current user if it's them
     if (user.id === userId) {
       const updatedUser = { 
@@ -193,7 +134,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
         lastActive: new Date().toISOString()
       };
       setUser(updatedUser);
+      if (isInitialized) {
+        saveUser(updatedUser);
+      }
     }
+    
+    // Update in connected users list
+    setConnectedUsers(prev => 
+      prev.map(u => u.id === userId ? { 
+        ...u, 
+        totalPoints: newPoints,
+        lastActive: new Date().toISOString()
+      } : u)
+    );
   };
 
   // Update user when wallet connection changes
@@ -209,28 +162,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       };
       
       if (user.id !== walletState.address) {
-        // New wallet connected - check if user exists in database
-        if (isInitialized) {
-          const existingUser = getUserById(walletState.address);
-          if (existingUser) {
-            setUser(existingUser);
-          } else {
-            // Create new user
-            const newUser = {
-              ...updatedUser,
-              joinedAt: new Date().toISOString()
-            };
-            setUser(newUser);
-            updateUser(newUser);
-          }
-        } else {
-          setUser(updatedUser);
-        }
-      } else {
+        // New wallet connected
+        setUser(updatedUser);
         updateUser(updatedUser);
       }
     }
-  }, [walletState.isConnected, walletState.address, isInitialized]);
+  }, [walletState.isConnected, walletState.address]);
 
   const completeTask = (airdropId: string, taskId: string) => {
     const updatedUser = { ...user };
@@ -246,14 +183,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const task = airdrop?.tasks.find(t => t.id === taskId);
       if (task) {
         updatedUser.totalPoints += task.points;
-        
-        if (isInitialized) {
-          logAdminAction(user.id, 'COMPLETE_TASK', 'task', taskId, { 
-            airdropId, 
-            points: task.points,
-            taskTitle: task.title 
-          });
-        }
       }
       
       updateUser(updatedUser);
@@ -267,10 +196,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       lastActive: new Date().toISOString()
     };
     updateUser(updatedUser);
-    
-    if (isInitialized) {
-      logAdminAction(user.id, 'WITHDRAW_POINTS', 'user', user.id, { points });
-    }
   };
 
   const addAirdrop = (airdropData: Omit<Airdrop, 'id'>) => {
@@ -278,37 +203,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...airdropData,
       id: Date.now().toString(),
     };
-    
+    setAirdrops([...airdrops, newAirdrop]);
     if (isInitialized) {
       saveAirdrop(newAirdrop);
-      logAdminAction('admin', 'CREATE', 'airdrop', newAirdrop.id, { title: newAirdrop.title });
-      refreshData();
-    } else {
-      setAirdrops([...airdrops, newAirdrop]);
     }
   };
 
   const updateAirdrop = (id: string, updates: Partial<Airdrop>) => {
-    if (isInitialized) {
-      dbUpdateAirdrop(id, updates);
-      logAdminAction('admin', 'UPDATE', 'airdrop', id, updates);
-      refreshData();
-    } else {
-      const updatedAirdrops = airdrops.map(airdrop => 
-        airdrop.id === id ? { ...airdrop, ...updates } : airdrop
-      );
-      setAirdrops(updatedAirdrops);
+    const updatedAirdrops = airdrops.map(airdrop => 
+      airdrop.id === id ? { ...airdrop, ...updates } : airdrop
+    );
+    setAirdrops(updatedAirdrops);
+    
+    const updatedAirdrop = updatedAirdrops.find(a => a.id === id);
+    if (updatedAirdrop && isInitialized) {
+      saveAirdrop(updatedAirdrop);
     }
   };
 
   const deleteAirdrop = (id: string) => {
+    setAirdrops(airdrops.filter(airdrop => airdrop.id !== id));
     if (isInitialized) {
-      const airdrop = getAirdropById(id);
       dbDeleteAirdrop(id);
-      logAdminAction('admin', 'DELETE', 'airdrop', id, { title: airdrop?.title });
-      refreshData();
-    } else {
-      setAirdrops(airdrops.filter(airdrop => airdrop.id !== id));
     }
   };
 
@@ -320,34 +236,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     
     if (isInitialized) {
       saveWithdrawal(newWithdrawal);
-      logAdminAction('admin', 'CREATE', 'withdrawal', newWithdrawal.id, {
-        userId: withdrawalData.userId,
-        amount: withdrawalData.amount
-      });
     }
   };
 
   const updateWithdrawal = (id: string, updates: Partial<WithdrawalHistory>) => {
     if (isInitialized) {
       dbUpdateWithdrawal(id, updates);
-      logAdminAction('admin', 'UPDATE', 'withdrawal', id, updates);
     }
   };
 
   const deleteWithdrawal = (id: string) => {
     if (isInitialized) {
       dbDeleteWithdrawal(id);
-      logAdminAction('admin', 'DELETE', 'withdrawal', id);
     }
   };
 
   const getAllWithdrawals = (): WithdrawalHistory[] => {
     return isInitialized ? getWithdrawals() : [];
   };
-
-  const databaseStatus = isInitialized 
-    ? `Connected (${connectionStatus})` 
-    : `Connecting... (${connectionStatus})`;
 
   return (
     <AppContext.Provider value={{
@@ -373,9 +279,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addWithdrawal,
       updateWithdrawal,
       deleteWithdrawal,
-      getAllWithdrawals,
-      databaseStatus,
-      refreshData
+      getAllWithdrawals
     }}>
       {children}
     </AppContext.Provider>
