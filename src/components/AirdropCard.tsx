@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import { useWallet } from '../hooks/useWallet';
 import { Airdrop } from '../types';
@@ -12,6 +13,7 @@ interface AirdropCardProps {
 export default function AirdropCard({ airdrop, onViewTasks }: AirdropCardProps) {
   const { user } = useApp();
   const { walletState } = useWallet();
+  const navigate = useNavigate();
   
   const completedTasks = user.completedTasks[airdrop.id] || [];
   const totalTasks = airdrop.tasks.length;
@@ -40,7 +42,8 @@ export default function AirdropCard({ airdrop, onViewTasks }: AirdropCardProps) 
   const handleViewTasks = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    onViewTasks(airdrop);
+    // Переход на страницу задач с ID аирдропа
+    navigate(`/airdrop?id=${airdrop.id}`);
   };
 
   return (

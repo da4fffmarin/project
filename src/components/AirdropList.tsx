@@ -27,9 +27,10 @@ export default function AirdropList() {
   const activeAirdropsCount = airdrops.filter(a => a.status === 'active').length;
   const totalRewards = airdrops.reduce((sum, a) => sum + parseInt(a.totalReward.replace(/[^0-9]/g, '')), 0);
 
+  // Функция-заглушка для совместимости с AirdropCard
   const handleViewTasks = (airdrop: Airdrop) => {
-    // Переход на страницу задач с ID аирдропа
-    window.location.href = `/airdrop?id=${airdrop.id}`;
+    // Эта функция не используется, так как навигация происходит внутри AirdropCard
+    console.log('View tasks for airdrop:', airdrop.id);
   };
 
   return (
