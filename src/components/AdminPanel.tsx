@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../contexts/AppContext';
+import DatabaseStatus from './DatabaseStatus';
 import { 
   Plus, 
   Edit3, 
@@ -13,14 +14,31 @@ import {
   X,
   ExternalLink,
   Clock,
-  User
+  User,
+  Database,
+  RefreshCw
 } from 'lucide-react';
 
 export default function AdminPanel() {
-  const { airdrops, adminStats, addAirdrop, updateAirdrop, deleteAirdrop, connectedUsers, updateUserPoints, getAllWithdrawals, addWithdrawal, updateWithdrawal, deleteWithdrawal } = useApp();
+  const { 
+    airdrops, 
+    adminStats, 
+    addAirdrop, 
+    updateAirdrop, 
+    deleteAirdrop, 
+    connectedUsers, 
+    updateUserPoints, 
+    getAllWithdrawals, 
+    addWithdrawal, 
+    updateWithdrawal, 
+    deleteWithdrawal,
+    refreshData,
+    databaseStatus
+  } = useApp();
+  
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingAirdrop, setEditingAirdrop] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'airdrops' | 'users' | 'withdrawals'>('airdrops');
+  const [activeTab, setActiveTab] = useState<'overview' | 'airdrops' | 'users' | 'withdrawals' | 'database'>('overview');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -273,6 +291,24 @@ export default function AdminPanel() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Header with Database Status */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Admin Panel</h1>
+          <div className="flex items-center space-x-2 mt-1">
+            <Database className="w-4 h-4 text-blue-400" />
+            <span className="text-slate-400 text-sm">{databaseStatus}</span>
+            <button
+              onClick={refreshData}
+              className="p-1 text-slate-400 hover:text-white transition-colors"
+              title="Refresh data"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Stats Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl sm:rounded-2xl p-4 sm:p-6">
@@ -317,7 +353,17 @@ export default function AdminPanel() {
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-2 mb-6 sm:mb-8">
+      <div className="flex flex-wrap space-x-2 mb-6 sm:mb-8">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-semibold transition-all duration-300 ${
+            activeTab === 'overview'
+              ? 'bg-gradient-to-r from-purple-500 to-blue-600 text-white shadow-lg shadow-purple-500/25'
+              : 'bg-slate-800/50 text-slate-300 hover:text-white hover:bg-slate-700/50'
+          }`}
+        >
+          Overview
+        </button>
         <button
           onClick={() => setActiveTab('airdrops')}
           className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-semibold transition-all duration-300 ${
@@ -348,8 +394,93 @@ export default function AdminPanel() {
         >
           Withdrawals
         </button>
+        <button
+          onClick={() => setActiveTab('database')}
+          className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-semibold transition-all duration-300 ${
+            activeTab === 'database'
+              ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25'
+              : 'bg-slate-800/50 text-slate-300 hover:text-white hover:bg-slate-700/50'
+          }`}
+        >
+          Database
+        </button>
       </div>
 
+      {/* Overview Tab */}
+      {activeTab === 'overview' && (
+        <div className="space-y-6">
+          <DatabaseStatus />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Recent Activity</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-xl">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                    <span className="text-slate-300 text-sm">Database connected</span>
+                  </div>
+                  <span className="text-slate-400 text-xs">Now</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-xl">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    <span className="text-slate-300 text-sm">Data synchronized</span>
+                  </div>
+                  <span className="text-slate-400 text-xs">1m ago</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-xl">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                    <span className="text-slate-300 text-sm">Admin panel accessed</span>
+                  </div>
+                  <span className="text-slate-400 text-xs">5m ago</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
+              <div className="space-y-3">
+                <button
+                  onClick={() => setActiveTab('airdrops')}
+                  className="w-full p-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl transition-colors text-left"
+                >
+                  <div className="flex items-center space-x-3">
+                    <Plus className="w-5 h-5" />
+                    <span>Create New Airdrop</span>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setActiveTab('users')}
+                  className="w-full p-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-colors text-left"
+                >
+                  <div className="flex items-center space-x-3">
+                    <Users className="w-5 h-5" />
+                    <span>Manage Users</span>
+                  </div>
+                </button>
+                <button
+                  onClick={refreshData}
+                  className="w-full p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors text-left"
+                >
+                  <div className="flex items-center space-x-3">
+                    <RefreshCw className="w-5 h-5" />
+                    <span>Refresh Data</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Database Tab */}
+      {activeTab === 'database' && (
+        <DatabaseStatus />
+      )}
+
+      {/* Rest of the existing tabs remain the same... */}
       {/* Airdrop Management Tab */}
       {activeTab === 'airdrops' && (
         <>
