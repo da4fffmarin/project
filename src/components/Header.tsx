@@ -1,43 +1,49 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import { useWallet } from '../hooks/useWallet';
 import { Settings, User, Coins, Shield, Wallet, LogOut, Gift, HelpCircle, Trophy, Menu, X } from 'lucide-react';
 
-interface HeaderProps {
-  currentView: 'airdrops' | 'admin' | 'rewards' | 'leaderboard' | 'faq' | 'settings';
-  onViewChange: (view: 'airdrops' | 'admin' | 'rewards' | 'leaderboard' | 'faq' | 'settings') => void;
-}
-
-export default function Header({ currentView, onViewChange }: HeaderProps) {
+export default function Header() {
   const { user, isAdmin, setIsAdmin } = useApp();
   const { walletState, connectWallet, disconnectWallet, formatAddress } = useWallet();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleAdminToggle = () => {
     if (isAdmin) {
       setIsAdmin(false);
-      onViewChange('airdrops');
+      navigate('/');
     } else {
       setIsAdmin(true);
+      navigate('/admin');
     }
   };
 
   const navItems = [
-    { id: 'airdrops', label: 'Airdrops', icon: Coins },
-    { id: 'rewards', label: 'Rewards', icon: Gift },
-    { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
-    { id: 'faq', label: 'FAQ', icon: HelpCircle },
+    { id: '/', label: 'Airdrops', icon: Coins },
+    { id: '/rewards', label: 'Rewards', icon: Gift },
+    { id: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+    { id: '/faq', label: 'FAQ', icon: HelpCircle },
     ...(isAdmin ? [
-      { id: 'admin', label: 'Admin', icon: Shield }
+      { id: '/admin', label: 'Admin', icon: Shield }
     ] : [])
   ];
+
+  const isCurrentPath = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/' || location.pathname === '';
+    }
+    return location.pathname === path;
+  };
 
   return (
     <header className="bg-slate-900/95 backdrop-blur-xl border-b border-slate-700/50 sticky top-0 z-50 shadow-2xl shadow-slate-900/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
-          <div className="flex items-center space-x-3 sm:space-x-4">
+          <div className="flex items-center space-x-3 sm:space-x-4 cursor-pointer" onClick={() => navigate('/')}>
             <div className="relative">
               <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-br from-purple-500 via-blue-600 to-emerald-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/25">
                 <Coins className="w-5 sm:w-7 h-5 sm:h-7 text-white" />
@@ -57,9 +63,9 @@ export default function Header({ currentView, onViewChange }: HeaderProps) {
             {navItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => onViewChange(item.id as any)}
+                onClick={() => navigate(item.id)}
                 className={`px-4 xl:px-6 py-2 xl:py-3 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2 ${
-                  currentView === item.id
+                  isCurrentPath(item.id)
                     ? 'bg-gradient-to-r from-purple-500 to-blue-600 text-white shadow-lg shadow-purple-500/25 scale-105'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800/50 backdrop-blur-sm'
                 }`}
@@ -119,9 +125,9 @@ export default function Header({ currentView, onViewChange }: HeaderProps) {
             {/* Action Buttons */}
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => onViewChange('settings')}
+                onClick={() => navigate('/settings')}
                 className={`p-2 xl:p-3 rounded-xl transition-all duration-300 ${
-                  currentView === 'settings'
+                  isCurrentPath('/settings')
                     ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25 scale-105'
                     : 'bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600'
                 }`}
@@ -152,11 +158,11 @@ export default function Header({ currentView, onViewChange }: HeaderProps) {
                 <button
                   key={item.id}
                   onClick={() => {
-                    onViewChange(item.id as any);
+                    navigate(item.id);
                     setMobileMenuOpen(false);
                   }}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                    currentView === item.id
+                    isCurrentPath(item.id)
                       ? 'bg-gradient-to-r from-purple-500 to-blue-600 text-white shadow-lg shadow-purple-500/25'
                       : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
                   }`}
@@ -202,11 +208,11 @@ export default function Header({ currentView, onViewChange }: HeaderProps) {
               <div className="flex space-x-2">
                 <button
                   onClick={() => {
-                    onViewChange('settings');
+                    navigate('/settings');
                     setMobileMenuOpen(false);
                   }}
                   className={`flex-1 py-3 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 ${
-                    currentView === 'settings'
+                    isCurrentPath('/settings')
                       ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25'
                       : 'bg-slate-800/50 text-slate-300 hover:text-white'
                   }`}

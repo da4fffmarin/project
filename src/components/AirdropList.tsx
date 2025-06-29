@@ -5,11 +5,7 @@ import { Airdrop } from '../types';
 import AirdropCard from './AirdropCard';
 import { Search, Filter, TrendingUp, Calendar, Trophy, Sparkles, Zap, Wallet, AlertCircle } from 'lucide-react';
 
-interface AirdropListProps {
-  onViewTasks: (airdrop: Airdrop) => void;
-}
-
-export default function AirdropList({ onViewTasks }: AirdropListProps) {
+export default function AirdropList() {
   const { airdrops } = useApp();
   const { walletState, connectWallet, isConnecting, connectionError, clearError } = useWallet();
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,6 +26,11 @@ export default function AirdropList({ onViewTasks }: AirdropListProps) {
 
   const activeAirdropsCount = airdrops.filter(a => a.status === 'active').length;
   const totalRewards = airdrops.reduce((sum, a) => sum + parseInt(a.totalReward.replace(/[^0-9]/g, '')), 0);
+
+  const handleViewTasks = (airdrop: Airdrop) => {
+    // Переход на страницу задач с ID аирдропа
+    window.location.href = `/airdrop?id=${airdrop.id}`;
+  };
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -218,7 +219,7 @@ export default function AirdropList({ onViewTasks }: AirdropListProps) {
               <AirdropCard
                 key={airdrop.id}
                 airdrop={airdrop}
-                onViewTasks={onViewTasks}
+                onViewTasks={handleViewTasks}
               />
             ))}
           </div>
