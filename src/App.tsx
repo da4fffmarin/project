@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 import { AppProvider } from './contexts/AppContext';
 import Header from './components/Header';
 import AirdropList from './components/AirdropList';
@@ -16,19 +16,24 @@ import { useApp } from './contexts/AppContext';
 // Компонент для отображения задач конкретного аирдропа
 function AirdropTasksRoute() {
   const { airdrops } = useApp();
-  const urlParams = new URLSearchParams(window.location.search);
-  const airdropId = urlParams.get('id');
+  const [searchParams] = useSearchParams();
+  const airdropId = searchParams.get('id');
   
   const airdrop = airdrops.find(a => a.id === airdropId);
   
   if (!airdrop) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12 text-center">
-        <h1 className="text-2xl font-bold text-white mb-4">Аирдроп не найден</h1>
-        <p className="text-slate-400 mb-6">Аирдроп с указанным ID не существует</p>
-        <a href="/" className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-600 text-white rounded-xl hover:from-purple-600 hover:to-blue-700 transition-all duration-200">
-          Вернуться к списку аирдропов
-        </a>
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8">
+          <h1 className="text-2xl font-bold text-white mb-4">Аирдроп не найден</h1>
+          <p className="text-slate-400 mb-6">Аирдроп с ID "{airdropId}" не существует</p>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-600 text-white rounded-xl hover:from-purple-600 hover:to-blue-700 transition-all duration-200"
+          >
+            Вернуться к списку аирдропов
+          </button>
+        </div>
       </div>
     );
   }
@@ -39,6 +44,7 @@ function AirdropTasksRoute() {
 // Компонент для админ роутов
 function AdminRoutes() {
   const { isAdmin, isAdminAuthenticated, setIsAdminAuthenticated, setIsAdmin } = useApp();
+  const [searchParams] = useSearchParams();
 
   const handleAdminLogin = (success: boolean) => {
     if (success) {
@@ -49,15 +55,13 @@ function AdminRoutes() {
 
   // Проверка секретного доступа
   React.useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('admin') === 'secret' && urlParams.get('key') === 'master2025') {
+    if (searchParams.get('admin') === 'secret' && searchParams.get('key') === 'master2025') {
       return;
     }
-  }, []);
+  }, [searchParams]);
 
   // Показать секретную админ панель
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('admin') === 'secret' && urlParams.get('key') === 'master2025') {
+  if (searchParams.get('admin') === 'secret' && searchParams.get('key') === 'master2025') {
     return <SecretAdminPanel />;
   }
 
@@ -72,42 +76,42 @@ function AdminRoutes() {
 // Основной компонент приложения с роутингом
 function AppContent() {
   return (
-    <Router>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
-        <Header />
-        
-        <main className="container mx-auto px-4 py-6 sm:py-8 lg:py-12 relative z-10">
-          <Routes>
-            <Route path="/" element={<AirdropList />} />
-            <Route path="/admin" element={<AdminRoutes />} />
-            <Route path="/rewards" element={<RewardsPage onBack={() => window.history.back()} />} />
-            <Route path="/leaderboard" element={<LeaderboardPage />} />
-            <Route path="/faq" element={<FAQPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/airdrop" element={<AirdropTasksRoute />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+      <Header />
+      
+      <main className="container mx-auto px-4 py-6 sm:py-8 lg:py-12 relative z-10">
+        <Routes>
+          <Route path="/" element={<AirdropList />} />
+          <Route path="/admin" element={<AdminRoutes />} />
+          <Route path="/rewards" element={<RewardsPage onBack={() => window.history.back()} />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/faq" element={<FAQPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/airdrop" element={<AirdropTasksRoute />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
 
-        {/* Enhanced background decorations */}
-        <div className="fixed inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-purple-500/8 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-64 sm:w-80 h-64 sm:h-80 bg-blue-500/8 rounded-full blur-3xl animate-pulse delay-1000" />
-          <div className="absolute top-3/4 left-3/4 w-48 sm:w-64 h-48 sm:h-64 bg-emerald-500/8 rounded-full blur-2xl animate-pulse delay-500" />
-          <div className="absolute top-1/2 left-1/2 w-24 sm:w-32 h-24 sm:h-32 bg-yellow-500/5 rounded-full blur-xl animate-pulse delay-2000" />
-          
-          {/* Grid pattern overlay */}
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:50px_50px]" />
-        </div>
+      {/* Enhanced background decorations */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-purple-500/8 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-64 sm:w-80 h-64 sm:h-80 bg-blue-500/8 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-3/4 left-3/4 w-48 sm:w-64 h-48 sm:h-64 bg-emerald-500/8 rounded-full blur-2xl animate-pulse delay-500" />
+        <div className="absolute top-1/2 left-1/2 w-24 sm:w-32 h-24 sm:h-32 bg-yellow-500/5 rounded-full blur-xl animate-pulse delay-2000" />
+        
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:50px_50px]" />
       </div>
-    </Router>
+    </div>
   );
 }
 
 function App() {
   return (
     <AppProvider>
-      <AppContent />
+      <Router>
+        <AppContent />
+      </Router>
     </AppProvider>
   );
 }
