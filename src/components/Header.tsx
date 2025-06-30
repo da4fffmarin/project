@@ -22,22 +22,22 @@ export default function Header() {
     }
   };
 
-  // Разделяем навигацию для обычных пользователей и админов
+  // Separate navigation for regular users and admins
   const userNavItems = [
-    { id: '/', label: 'Главная', icon: Home },
-    { id: '/dashboard', label: 'Дашборд', icon: User },
-    { id: '/rewards', label: 'Награды', icon: Gift },
-    { id: '/leaderboard', label: 'Рейтинг', icon: Trophy },
+    { id: '/', label: 'Home', icon: Home },
+    { id: '/dashboard', label: 'Dashboard', icon: User },
+    { id: '/rewards', label: 'Rewards', icon: Gift },
+    { id: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { id: '/premium', label: 'Premium', icon: Crown },
     { id: '/faq', label: 'FAQ', icon: HelpCircle }
   ];
 
   const adminNavItems = [
-    { id: '/', label: 'Аирдропы', icon: Coins },
-    { id: '/admin', label: 'Админ панель', icon: Shield },
-    { id: '/analytics', label: 'Аналитика', icon: BarChart3 },
+    { id: '/', label: 'Airdrops', icon: Coins },
+    { id: '/admin', label: 'Admin Panel', icon: Shield },
+    { id: '/analytics', label: 'Analytics', icon: BarChart3 },
     { id: '/telegram', label: 'Telegram', icon: MessageCircle },
-    { id: '/settings', label: 'Настройки', icon: Settings }
+    { id: '/settings', label: 'Settings', icon: Settings }
   ];
 
   const navItems = isAdmin ? adminNavItems : userNavItems;
@@ -66,7 +66,7 @@ export default function Header() {
                 AirdropHub
               </h1>
               <p className="text-xs text-slate-400 font-medium">
-                {isAdmin ? 'Панель администратора' : 'Crypto Rewards Platform'}
+                {isAdmin ? 'Admin Dashboard' : 'Crypto Rewards Platform'}
               </p>
             </div>
           </div>
@@ -128,7 +128,7 @@ export default function Header() {
               </button>
             )}
 
-            {/* Points Display - только для обычных пользователей */}
+            {/* Points Display - only for regular users */}
             {walletState.isConnected && !isAdmin && (
               <div className="flex items-center space-x-3 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl px-3 xl:px-4 py-2">
                 <div className="text-right">
@@ -140,7 +140,7 @@ export default function Header() {
             
             {/* Action Buttons */}
             <div className="flex items-center space-x-2">
-              {/* Profile Button - только для обычных пользователей */}
+              {/* Profile Button - only for regular users */}
               {!isAdmin && (
                 <button
                   onClick={() => navigate('/profile')}
@@ -154,7 +154,7 @@ export default function Header() {
                 </button>
               )}
 
-              {/* Settings Button - только для админов */}
+              {/* Settings Button - only for admins */}
               {isAdmin && (
                 <button
                   onClick={() => navigate('/settings')}
@@ -175,7 +175,7 @@ export default function Header() {
                     ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/25 scale-105' 
                     : 'bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600'
                 }`}
-                title={isAdmin ? 'Режим администратора' : 'Пользовательский режим'}
+                title={isAdmin ? 'Admin Mode' : 'User Mode'}
               >
                 {isAdmin ? <Shield className="w-4 xl:w-5 h-4 xl:h-5" /> : <User className="w-4 xl:w-5 h-4 xl:h-5" />}
               </button>
@@ -254,7 +254,7 @@ export default function Header() {
                     }`}
                   >
                     <User className="w-5 h-5" />
-                    <span>Профиль</span>
+                    <span>Profile</span>
                   </button>
                 )}
 
@@ -271,7 +271,7 @@ export default function Header() {
                     }`}
                   >
                     <Settings className="w-5 h-5" />
-                    <span>Настройки</span>
+                    <span>Settings</span>
                   </button>
                 )}
 

@@ -17,13 +17,13 @@ export default function NotificationSystem() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    // Симуляция получения уведомлений
+    // Simulation of receiving notifications
     const mockNotifications: Notification[] = [
       {
         id: '1',
         type: 'airdrop',
-        title: 'Новый аирдроп!',
-        message: 'DefiSwap запустил новый аирдроп с наградой 150 DSWAP',
+        title: 'New Airdrop Available!',
+        message: 'DefiSwap launched a new airdrop with 150 DSWAP reward',
         timestamp: new Date(Date.now() - 5 * 60 * 1000),
         read: false,
         actionUrl: '/airdrop?id=1'
@@ -31,16 +31,16 @@ export default function NotificationSystem() {
       {
         id: '2',
         type: 'success',
-        title: 'Задача выполнена',
-        message: 'Вы успешно выполнили задачу "Join Telegram" и получили 50 поинтов',
+        title: 'Task Completed',
+        message: 'You successfully completed "Join Telegram" task and earned 50 points',
         timestamp: new Date(Date.now() - 30 * 60 * 1000),
         read: false
       },
       {
         id: '3',
         type: 'info',
-        title: 'Обновление платформы',
-        message: 'Добавлены новые функции: система уведомлений и улучшенная аналитика',
+        title: 'Platform Update',
+        message: 'New features added: notification system and improved analytics',
         timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
         read: true
       }
@@ -97,10 +97,10 @@ export default function NotificationSystem() {
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return 'Только что';
-    if (minutes < 60) return `${minutes} мин назад`;
-    if (hours < 24) return `${hours} ч назад`;
-    return `${days} дн назад`;
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
   };
 
   return (
@@ -131,14 +131,14 @@ export default function NotificationSystem() {
             {/* Header */}
             <div className="p-4 border-b border-slate-700/50">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-white">Уведомления</h3>
+                <h3 className="text-lg font-semibold text-white">Notifications</h3>
                 <div className="flex items-center space-x-2">
                   {unreadCount > 0 && (
                     <button
                       onClick={markAllAsRead}
                       className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
                     >
-                      Прочитать все
+                      Mark all read
                     </button>
                   )}
                   <button
@@ -156,7 +156,7 @@ export default function NotificationSystem() {
               {notifications.length === 0 ? (
                 <div className="p-6 text-center">
                   <Bell className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-                  <p className="text-slate-400">Нет уведомлений</p>
+                  <p className="text-slate-400">No notifications</p>
                 </div>
               ) : (
                 notifications.map((notification) => (
@@ -190,7 +190,7 @@ export default function NotificationSystem() {
                               <button
                                 onClick={() => markAsRead(notification.id)}
                                 className="p-1 text-slate-400 hover:text-emerald-400 transition-colors"
-                                title="Отметить как прочитанное"
+                                title="Mark as read"
                               >
                                 <Check className="w-3 h-3" />
                               </button>
@@ -198,7 +198,7 @@ export default function NotificationSystem() {
                             <button
                               onClick={() => removeNotification(notification.id)}
                               className="p-1 text-slate-400 hover:text-red-400 transition-colors"
-                              title="Удалить"
+                              title="Remove"
                             >
                               <X className="w-3 h-3" />
                             </button>
@@ -213,7 +213,7 @@ export default function NotificationSystem() {
                             }}
                             className="mt-2 text-xs text-purple-400 hover:text-purple-300 transition-colors"
                           >
-                            Перейти →
+                            View →
                           </button>
                         )}
                       </div>
