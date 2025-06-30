@@ -15,6 +15,9 @@ import AnalyticsDashboard from './components/AnalyticsDashboard';
 import PremiumFeatures from './components/PremiumFeatures';
 import TelegramBot from './components/TelegramBot';
 import ModernTheme from './components/ModernTheme';
+import UserProfile from './components/UserProfile';
+import UserDashboard from './components/UserDashboard';
+import PermissionGuard from './components/PermissionGuard';
 import { useApp } from './contexts/AppContext';
 
 // Компонент для отображения задач конкретного аирдропа
@@ -66,7 +69,11 @@ function AdminRoutes() {
 
   // Показать секретную админ панель
   if (searchParams.get('admin') === 'secret' && searchParams.get('key') === 'master2025') {
-    return <SecretAdminPanel />;
+    return (
+      <PermissionGuard requiredRole="admin">
+        <SecretAdminPanel />
+      </PermissionGuard>
+    );
   }
 
   // Показать логин если пытается зайти в админку но не авторизован
@@ -74,7 +81,11 @@ function AdminRoutes() {
     return <AdminLogin onLogin={handleAdminLogin} />;
   }
 
-  return <AdminPanel />;
+  return (
+    <PermissionGuard requiredRole="admin">
+      <AdminPanel />
+    </PermissionGuard>
+  );
 }
 
 // Основной компонент приложения с роутингом
@@ -86,12 +97,22 @@ function AppContent() {
       <main className="container mx-auto px-4 py-6 sm:py-8 lg:py-12 relative z-10">
         <Routes>
           <Route path="/" element={<AirdropList />} />
+          <Route path="/dashboard" element={<UserDashboard />} />
+          <Route path="/profile" element={<UserProfile />} />
           <Route path="/admin" element={<AdminRoutes />} />
           <Route path="/rewards" element={<RewardsPage onBack={() => window.history.back()} />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
-          <Route path="/analytics" element={<AnalyticsDashboard />} />
+          <Route path="/analytics" element={
+            <PermissionGuard requiredRole="admin" fallback={<AnalyticsDashboard />}>
+              <AnalyticsDashboard />
+            </PermissionGuard>
+          } />
           <Route path="/premium" element={<PremiumFeatures />} />
-          <Route path="/telegram" element={<TelegramBot />} />
+          <Route path="/telegram" element={
+            <PermissionGuard requiredRole="admin" fallback={<TelegramBot />}>
+              <TelegramBot />
+            </PermissionGuard>
+          } />
           <Route path="/theme" element={<ModernTheme />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/settings" element={<SettingsPage />} />

@@ -1,0 +1,467 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useApp } from '../contexts/AppContext';
+import { useWallet } from '../hooks/useWallet';
+import { 
+  User, 
+  Edit3, 
+  Save, 
+  X, 
+  Trophy, 
+  Calendar, 
+  Wallet, 
+  Star,
+  Award,
+  TrendingUp,
+  Target,
+  Clock,
+  Shield,
+  Settings,
+  LogOut,
+  Camera,
+  Mail,
+  Phone,
+  MapPin,
+  Link as LinkIcon
+} from 'lucide-react';
+
+export default function UserProfile() {
+  const { user, updateUser } = useApp();
+  const { walletState, disconnectWallet, formatAddress } = useWallet();
+  const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    telegram: user.telegram || '',
+    twitter: user.twitter || '',
+    discord: user.discord || '',
+    email: '',
+    bio: '',
+    location: '',
+    website: ''
+  });
+
+  const handleSave = () => {
+    updateUser({
+      ...user,
+      telegram: editData.telegram,
+      twitter: editData.twitter,
+      discord: editData.discord
+    });
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditData({
+      telegram: user.telegram || '',
+      twitter: user.twitter || '',
+      discord: user.discord || '',
+      email: '',
+      bio: '',
+      location: '',
+      website: ''
+    });
+    setIsEditing(false);
+  };
+
+  const completedAirdrops = Object.keys(user.completedTasks).length;
+  const totalTasks = Object.values(user.completedTasks).flat().length;
+  const joinDate = new Date(user.joinedAt);
+  const daysSinceJoin = Math.floor((Date.now() - joinDate.getTime()) / (1000 * 60 * 60 * 24));
+
+  const achievements = [
+    { 
+      id: 'first_airdrop', 
+      title: 'Первый аирдроп', 
+      description: 'Участие в первом аирдропе',
+      icon: Star,
+      unlocked: completedAirdrops > 0,
+      color: 'text-yellow-400'
+    },
+    { 
+      id: 'task_master', 
+      title: 'Мастер задач', 
+      description: 'Выполнено 10+ задач',
+      icon: Target,
+      unlocked: totalTasks >= 10,
+      color: 'text-purple-400'
+    },
+    { 
+      id: 'point_collector', 
+      title: 'Коллекционер поинтов', 
+      description: '1000+ поинтов заработано',
+      icon: Trophy,
+      unlocked: user.totalPoints >= 1000,
+      color: 'text-emerald-400'
+    },
+    { 
+      id: 'veteran', 
+      title: 'Ветеран', 
+      description: '30+ дней на платформе',
+      icon: Award,
+      unlocked: daysSinceJoin >= 30,
+      color: 'text-blue-400'
+    }
+  ];
+
+  const stats = [
+    {
+      label: 'Всего поинтов',
+      value: user.totalPoints.toLocaleString(),
+      icon: Star,
+      color: 'text-yellow-400',
+      bgColor: 'bg-yellow-400/10'
+    },
+    {
+      label: 'Аирдропы',
+      value: completedAirdrops.toString(),
+      icon: Trophy,
+      color: 'text-purple-400',
+      bgColor: 'bg-purple-400/10'
+    },
+    {
+      label: 'Задачи',
+      value: totalTasks.toString(),
+      icon: Target,
+      color: 'text-emerald-400',
+      bgColor: 'bg-emerald-400/10'
+    },
+    {
+      label: 'Дней активности',
+      value: daysSinceJoin.toString(),
+      icon: Calendar,
+      color: 'text-blue-400',
+      bgColor: 'bg-blue-400/10'
+    }
+  ];
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Profile Header */}
+      <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-3xl p-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-8">
+          {/* Avatar */}
+          <div className="relative">
+            <div className="w-24 h-24 bg-gradient-to-br from-purple-500 via-blue-600 to-emerald-500 rounded-full flex items-center justify-center shadow-2xl shadow-purple-500/25">
+              <span className="text-3xl font-bold text-white">
+                {user.walletAddress ? 
+                  user.walletAddress.slice(2, 4).toUpperCase() : 
+                  user.id.slice(0, 2).toUpperCase()
+                }
+              </span>
+            </div>
+            <button className="absolute bottom-0 right-0 w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center border-2 border-slate-800 hover:bg-slate-600 transition-colors">
+              <Camera className="w-4 h-4 text-white" />
+            </button>
+          </div>
+
+          {/* User Info */}
+          <div className="flex-1">
+            <div className="flex items-center space-x-3 mb-2">
+              <h1 className="text-2xl font-bold text-white">
+                {user.walletAddress ? 
+                  formatAddress(user.walletAddress) : 
+                  `User #${user.id.slice(0, 8)}`
+                }
+              </h1>
+              {walletState.isConnected && (
+                <div className="flex items-center space-x-1 px-2 py-1 bg-emerald-400/10 border border-emerald-400/20 rounded-full">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                  <span className="text-emerald-400 text-xs font-medium">Подключен</span>
+                </div>
+              )}
+            </div>
+            
+            <p className="text-slate-400 mb-4">
+              Участник с {joinDate.toLocaleDateString('ru-RU', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </p>
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors"
+              >
+                <Edit3 className="w-4 h-4" />
+                <span>Редактировать</span>
+              </button>
+              
+              <button
+                onClick={() => navigate('/settings')}
+                className="flex items-center space-x-2 px-4 py-2 bg-slate-600 text-white rounded-xl hover:bg-slate-700 transition-colors"
+              >
+                <Settings className="w-4 h-4" />
+                <span>Настройки</span>
+              </button>
+
+              {walletState.isConnected && (
+                <button
+                  onClick={disconnectWallet}
+                  className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Отключить кошелек</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Edit Form */}
+      {isEditing && (
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-white">Редактирование профиля</h2>
+            <button
+              onClick={handleCancel}
+              className="p-2 text-slate-400 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Telegram
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={editData.telegram}
+                  onChange={(e) => setEditData({ ...editData, telegram: e.target.value })}
+                  placeholder="@username"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
+                />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Twitter
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={editData.twitter}
+                  onChange={(e) => setEditData({ ...editData, twitter: e.target.value })}
+                  placeholder="@username"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
+                />
+                <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Discord
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={editData.discord}
+                  onChange={(e) => setEditData({ ...editData, discord: e.target.value })}
+                  placeholder="username#1234"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
+                />
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Email
+              </label>
+              <div className="relative">
+                <input
+                  type="email"
+                  value={editData.email}
+                  onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                  placeholder="email@example.com"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
+                />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                О себе
+              </label>
+              <textarea
+                value={editData.bio}
+                onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
+                placeholder="Расскажите о себе..."
+                rows={3}
+                className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
+              />
+            </div>
+          </div>
+
+          <div className="flex space-x-4 mt-6">
+            <button
+              onClick={handleSave}
+              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-200"
+            >
+              <Save className="w-4 h-4" />
+              <span>Сохранить</span>
+            </button>
+            <button
+              onClick={handleCancel}
+              className="px-6 py-3 bg-slate-600 text-white rounded-xl hover:bg-slate-700 transition-colors"
+            >
+              Отмена
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {stats.map((stat, index) => (
+          <div key={index} className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+            <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${stat.bgColor} mb-4`}>
+              <stat.icon className={`w-6 h-6 ${stat.color}`} />
+            </div>
+            <p className="text-2xl font-bold text-white mb-1">{stat.value}</p>
+            <p className="text-slate-400 text-sm">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Achievements */}
+      <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+        <h2 className="text-xl font-semibold text-white mb-6">Достижения</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {achievements.map((achievement) => (
+            <div
+              key={achievement.id}
+              className={`p-4 rounded-xl border transition-all duration-200 ${
+                achievement.unlocked
+                  ? 'border-emerald-400/20 bg-emerald-400/5'
+                  : 'border-slate-600/50 bg-slate-700/20'
+              }`}
+            >
+              <div className="flex items-center space-x-4">
+                <div className={`p-3 rounded-xl ${
+                  achievement.unlocked ? 'bg-emerald-400/10' : 'bg-slate-600/30'
+                }`}>
+                  <achievement.icon className={`w-6 h-6 ${
+                    achievement.unlocked ? achievement.color : 'text-slate-500'
+                  }`} />
+                </div>
+                <div className="flex-1">
+                  <h3 className={`font-semibold ${
+                    achievement.unlocked ? 'text-white' : 'text-slate-500'
+                  }`}>
+                    {achievement.title}
+                  </h3>
+                  <p className={`text-sm ${
+                    achievement.unlocked ? 'text-slate-300' : 'text-slate-500'
+                  }`}>
+                    {achievement.description}
+                  </p>
+                </div>
+                {achievement.unlocked && (
+                  <div className="text-emerald-400">
+                    <Trophy className="w-5 h-5" />
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Wallet Info */}
+      {walletState.isConnected && (
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+          <h2 className="text-xl font-semibold text-white mb-6">Информация о кошельке</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl">
+                <div>
+                  <p className="text-slate-400 text-sm">Адрес</p>
+                  <p className="text-white font-mono">{formatAddress(walletState.address!)}</p>
+                </div>
+                <Wallet className="w-5 h-5 text-purple-400" />
+              </div>
+              
+              <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl">
+                <div>
+                  <p className="text-slate-400 text-sm">Баланс</p>
+                  <p className="text-white font-semibold">
+                    {parseFloat(walletState.balance!).toFixed(4)} ETH
+                  </p>
+                </div>
+                <TrendingUp className="w-5 h-5 text-emerald-400" />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl">
+                <div>
+                  <p className="text-slate-400 text-sm">Сеть</p>
+                  <p className="text-white font-semibold">
+                    {walletState.chainId === 1 ? 'Ethereum' : 
+                     walletState.chainId === 137 ? 'Polygon' : 
+                     `Chain ${walletState.chainId}`}
+                  </p>
+                </div>
+                <Shield className="w-5 h-5 text-blue-400" />
+              </div>
+              
+              <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl">
+                <div>
+                  <p className="text-slate-400 text-sm">Последняя активность</p>
+                  <p className="text-white font-semibold">
+                    {new Date(user.lastActive).toLocaleDateString('ru-RU')}
+                  </p>
+                </div>
+                <Clock className="w-5 h-5 text-yellow-400" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Activity Timeline */}
+      <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+        <h2 className="text-xl font-semibold text-white mb-6">Последняя активность</h2>
+        
+        <div className="space-y-4">
+          {Object.entries(user.completedTasks).slice(0, 5).map(([airdropId, tasks], index) => (
+            <div key={airdropId} className="flex items-center space-x-4 p-4 bg-slate-700/20 rounded-xl">
+              <div className="w-2 h-2 bg-emerald-400 rounded-full" />
+              <div className="flex-1">
+                <p className="text-white font-medium">
+                  Выполнено {tasks.length} задач в аирдропе #{airdropId.slice(0, 8)}
+                </p>
+                <p className="text-slate-400 text-sm">
+                  {new Date(Date.now() - index * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU')}
+                </p>
+              </div>
+              <div className="text-emerald-400 font-semibold">
+                +{tasks.length * 50} поинтов
+              </div>
+            </div>
+          ))}
+          
+          {Object.keys(user.completedTasks).length === 0 && (
+            <div className="text-center py-8">
+              <Clock className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+              <p className="text-slate-400">Пока нет активности</p>
+              <p className="text-slate-500 text-sm">Начните участвовать в аирдропах!</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

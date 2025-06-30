@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import { useWallet } from '../hooks/useWallet';
-import { Settings, User, Coins, Shield, Wallet, LogOut, Gift, HelpCircle, Trophy, Menu, X, BarChart3, Crown, MessageCircle } from 'lucide-react';
+import { Settings, User, Coins, Shield, Wallet, LogOut, Gift, HelpCircle, Trophy, Menu, X, BarChart3, Crown, MessageCircle, Home } from 'lucide-react';
 import NotificationSystem from './NotificationSystem';
 
 export default function Header() {
@@ -22,18 +22,25 @@ export default function Header() {
     }
   };
 
-  const navItems = [
-    { id: '/', label: 'Airdrops', icon: Coins },
-    { id: '/rewards', label: 'Rewards', icon: Gift },
-    { id: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-    { id: '/analytics', label: 'Analytics', icon: BarChart3 },
+  // Разделяем навигацию для обычных пользователей и админов
+  const userNavItems = [
+    { id: '/', label: 'Главная', icon: Home },
+    { id: '/dashboard', label: 'Дашборд', icon: User },
+    { id: '/rewards', label: 'Награды', icon: Gift },
+    { id: '/leaderboard', label: 'Рейтинг', icon: Trophy },
     { id: '/premium', label: 'Premium', icon: Crown },
-    { id: '/telegram', label: 'Telegram', icon: MessageCircle },
-    { id: '/faq', label: 'FAQ', icon: HelpCircle },
-    ...(isAdmin ? [
-      { id: '/admin', label: 'Admin', icon: Shield }
-    ] : [])
+    { id: '/faq', label: 'FAQ', icon: HelpCircle }
   ];
+
+  const adminNavItems = [
+    { id: '/', label: 'Аирдропы', icon: Coins },
+    { id: '/admin', label: 'Админ панель', icon: Shield },
+    { id: '/analytics', label: 'Аналитика', icon: BarChart3 },
+    { id: '/telegram', label: 'Telegram', icon: MessageCircle },
+    { id: '/settings', label: 'Настройки', icon: Settings }
+  ];
+
+  const navItems = isAdmin ? adminNavItems : userNavItems;
 
   const isCurrentPath = (path: string) => {
     if (path === '/') {
@@ -58,7 +65,9 @@ export default function Header() {
               <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent">
                 AirdropHub
               </h1>
-              <p className="text-xs text-slate-400 font-medium">Crypto Rewards Platform</p>
+              <p className="text-xs text-slate-400 font-medium">
+                {isAdmin ? 'Панель администратора' : 'Crypto Rewards Platform'}
+              </p>
             </div>
           </div>
 
@@ -119,8 +128,8 @@ export default function Header() {
               </button>
             )}
 
-            {/* Points Display */}
-            {walletState.isConnected && (
+            {/* Points Display - только для обычных пользователей */}
+            {walletState.isConnected && !isAdmin && (
               <div className="flex items-center space-x-3 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl px-3 xl:px-4 py-2">
                 <div className="text-right">
                   <p className="text-sm font-bold text-emerald-400">{user.totalPoints}</p>
@@ -131,16 +140,33 @@ export default function Header() {
             
             {/* Action Buttons */}
             <div className="flex items-center space-x-2">
-              <button
-                onClick={() => navigate('/settings')}
-                className={`p-2 xl:p-3 rounded-xl transition-all duration-300 ${
-                  isCurrentPath('/settings')
-                    ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25 scale-105'
-                    : 'bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600'
-                }`}
-              >
-                <Settings className="w-4 xl:w-5 h-4 xl:h-5" />
-              </button>
+              {/* Profile Button - только для обычных пользователей */}
+              {!isAdmin && (
+                <button
+                  onClick={() => navigate('/profile')}
+                  className={`p-2 xl:p-3 rounded-xl transition-all duration-300 ${
+                    isCurrentPath('/profile')
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25 scale-105'
+                      : 'bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600'
+                  }`}
+                >
+                  <User className="w-4 xl:w-5 h-4 xl:h-5" />
+                </button>
+              )}
+
+              {/* Settings Button - только для админов */}
+              {isAdmin && (
+                <button
+                  onClick={() => navigate('/settings')}
+                  className={`p-2 xl:p-3 rounded-xl transition-all duration-300 ${
+                    isCurrentPath('/settings')
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25 scale-105'
+                      : 'bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600'
+                  }`}
+                >
+                  <Settings className="w-4 xl:w-5 h-4 xl:h-5" />
+                </button>
+              )}
 
               <button
                 onClick={handleAdminToggle}
@@ -149,7 +175,7 @@ export default function Header() {
                     ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/25 scale-105' 
                     : 'bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600'
                 }`}
-                title={isAdmin ? 'Admin Mode' : 'User Mode'}
+                title={isAdmin ? 'Режим администратора' : 'Пользовательский режим'}
               >
                 {isAdmin ? <Shield className="w-4 xl:w-5 h-4 xl:h-5" /> : <User className="w-4 xl:w-5 h-4 xl:h-5" />}
               </button>
@@ -189,10 +215,12 @@ export default function Header() {
                       <p className="text-white font-medium">{formatAddress(walletState.address!)}</p>
                       <p className="text-slate-400 text-sm">{parseFloat(walletState.balance!).toFixed(3)} ETH</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-emerald-400 font-bold">{user.totalPoints}</p>
-                      <p className="text-slate-400 text-sm">Points</p>
-                    </div>
+                    {!isAdmin && (
+                      <div className="text-right">
+                        <p className="text-emerald-400 font-bold">{user.totalPoints}</p>
+                        <p className="text-slate-400 text-sm">Points</p>
+                      </div>
+                    )}
                   </div>
                   <button
                     onClick={disconnectWallet}
@@ -213,20 +241,39 @@ export default function Header() {
               )}
 
               <div className="flex space-x-2">
-                <button
-                  onClick={() => {
-                    navigate('/settings');
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`flex-1 py-3 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 ${
-                    isCurrentPath('/settings')
-                      ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25'
-                      : 'bg-slate-800/50 text-slate-300 hover:text-white'
-                  }`}
-                >
-                  <Settings className="w-5 h-5" />
-                  <span>Settings</span>
-                </button>
+                {!isAdmin && (
+                  <button
+                    onClick={() => {
+                      navigate('/profile');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`flex-1 py-3 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 ${
+                      isCurrentPath('/profile')
+                        ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25'
+                        : 'bg-slate-800/50 text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    <User className="w-5 h-5" />
+                    <span>Профиль</span>
+                  </button>
+                )}
+
+                {isAdmin && (
+                  <button
+                    onClick={() => {
+                      navigate('/settings');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`flex-1 py-3 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 ${
+                      isCurrentPath('/settings')
+                        ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25'
+                        : 'bg-slate-800/50 text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    <Settings className="w-5 h-5" />
+                    <span>Настройки</span>
+                  </button>
+                )}
 
                 <button
                   onClick={() => {

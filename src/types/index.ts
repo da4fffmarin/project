@@ -40,6 +40,55 @@ export interface User {
   wallet?: string;
   joinedAt: string; // Added join timestamp
   lastActive: string; // Added last activity timestamp
+  role?: 'user' | 'admin' | 'super_admin'; // Added user roles
+  permissions?: string[]; // Added permissions array
+  profile?: UserProfile; // Added profile information
+}
+
+export interface UserProfile {
+  avatar?: string;
+  bio?: string;
+  location?: string;
+  website?: string;
+  email?: string;
+  phone?: string;
+  socialLinks?: {
+    telegram?: string;
+    twitter?: string;
+    discord?: string;
+    github?: string;
+    linkedin?: string;
+  };
+  preferences?: {
+    notifications: boolean;
+    emailUpdates: boolean;
+    theme: 'light' | 'dark' | 'auto';
+    language: string;
+  };
+  achievements?: Achievement[];
+  stats?: UserStats;
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  unlockedAt?: string;
+  progress?: number;
+  maxProgress?: number;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+}
+
+export interface UserStats {
+  totalAirdropsJoined: number;
+  totalTasksCompleted: number;
+  totalPointsEarned: number;
+  averageTaskCompletionTime: number;
+  streakDays: number;
+  favoriteCategory: string;
+  joinDate: string;
+  lastActiveDate: string;
 }
 
 export interface AdminStats {
@@ -61,6 +110,7 @@ export interface WalletState {
 export interface WithdrawalHistory {
   id: string;
   userId: string;
+  username?: string;
   amount: number;
   usdcAmount: number;
   timestamp: string;
@@ -93,4 +143,40 @@ export interface DatabaseState {
     version: string;
     totalTransactions: number;
   };
+}
+
+export interface Permission {
+  id: string;
+  name: string;
+  description: string;
+  category: 'user' | 'admin' | 'system';
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  description: string;
+  permissions: string[];
+  level: number;
+}
+
+export interface NotificationSettings {
+  email: boolean;
+  push: boolean;
+  telegram: boolean;
+  newAirdrops: boolean;
+  taskReminders: boolean;
+  rewardUpdates: boolean;
+  systemUpdates: boolean;
+}
+
+export interface SystemSettings {
+  maintenance: boolean;
+  registrationEnabled: boolean;
+  minWithdrawal: number;
+  maxWithdrawal: number;
+  pointsToUSDCRate: number;
+  platformFee: number;
+  maxAirdropsPerUser: number;
+  taskTimeoutMinutes: number;
 }
