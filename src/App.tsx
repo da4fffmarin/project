@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 import { AppProvider } from './contexts/AppContext';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import AirdropList from './components/AirdropList';
 import AdminPanel from './components/AdminPanel';
 import AdminLogin from './components/AdminLogin';
@@ -86,15 +87,15 @@ function AdminRoutes() {
 // Основной компонент приложения с роутингом
 function AppContent() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden flex flex-col">
       <Header />
       
-      <main className="container mx-auto px-4 py-6 sm:py-8 lg:py-12 relative z-10">
+      <main className="flex-1 container mx-auto px-4 py-6 sm:py-8 lg:py-12 relative z-10">
         <Routes>
           <Route path="/" element={<AirdropList />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/admin" element={<AdminRoutes />} />
-          <Route path="/rewards" element={<RewardsPage onBack={() => window.history.back()} />} />
+          <Route path="/rewards" element={<RewardsPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/settings" element={<SettingsPage />} />
@@ -104,6 +105,8 @@ function AppContent() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+
+      <Footer />
 
       {/* Enhanced background decorations */}
       <div className="fixed inset-0 -z-10 overflow-hidden">

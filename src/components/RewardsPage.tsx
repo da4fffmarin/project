@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { useWallet } from '../hooks/useWallet';
 import { 
-  ArrowLeft, 
   Coins, 
   DollarSign, 
   TrendingUp, 
@@ -15,11 +14,7 @@ import {
   Zap
 } from 'lucide-react';
 
-interface RewardsPageProps {
-  onBack: () => void;
-}
-
-export default function RewardsPage({ onBack }: RewardsPageProps) {
+export default function RewardsPage() {
   const { user, withdrawPoints, withdrawalHistory, addWithdrawal } = useApp();
   const { walletState } = useWallet();
   const [withdrawAmount, setWithdrawAmount] = useState('');
@@ -77,22 +72,12 @@ export default function RewardsPage({ onBack }: RewardsPageProps) {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header */}
-      <div className="mb-6 sm:mb-8">
-        <button
-          onClick={onBack}
-          className="flex items-center space-x-2 text-slate-400 hover:text-white transition-colors mb-4 sm:mb-6"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="text-sm sm:text-base">Back to Airdrops</span>
-        </button>
-
-        <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-flex items-center justify-center w-16 sm:w-20 h-16 sm:h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl sm:rounded-3xl mb-4 sm:mb-6 shadow-2xl shadow-emerald-500/25">
-            <Coins className="w-8 sm:w-10 h-8 sm:h-10 text-white" />
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4">Rewards Center</h1>
-          <p className="text-lg sm:text-xl text-slate-300">Convert your points to USDC and withdraw to your wallet</p>
+      <div className="text-center mb-8 sm:mb-12">
+        <div className="inline-flex items-center justify-center w-16 sm:w-20 h-16 sm:h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl sm:rounded-3xl mb-4 sm:mb-6 shadow-2xl shadow-emerald-500/25">
+          <Coins className="w-8 sm:w-10 h-8 sm:h-10 text-white" />
         </div>
+        <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4">Rewards Center</h1>
+        <p className="text-lg sm:text-xl text-slate-300">Convert your points to USDC and withdraw to your wallet</p>
       </div>
 
       {/* Balance Overview */}
@@ -126,9 +111,9 @@ export default function RewardsPage({ onBack }: RewardsPageProps) {
             </div>
             <CheckCircle2 className="w-4 sm:w-5 h-4 sm:h-5 text-blue-400" />
           </div>
-          <p className="text-slate-400 text-sm mb-1">Wallet</p>
+          <p className="text-slate-400 text-sm mb-1">Wallet Status</p>
           <p className="text-base sm:text-lg font-bold text-white">
-            {walletState.isConnected ? 'Connected' : 'Not Connected'}
+            {walletState.isConnected ? 'Ready' : 'Connect Required'}
           </p>
         </div>
       </div>
