@@ -109,7 +109,7 @@ export default function AirdropList() {
           </div>
         </div>
 
-        {/* Call to Action */}
+        {/* Call to Action - только если кошелек не подключен */}
         {!walletState.isConnected && (
           <div className="mb-8 sm:mb-12 px-4">
             <button
@@ -141,33 +141,6 @@ export default function AirdropList() {
           </div>
         )}
       </div>
-
-      {/* Compact Wallet Connection for Connected Users */}
-      {walletState.isConnected && (
-        <div className="mb-8 sm:mb-12 px-4">
-          <div className="bg-gradient-to-r from-emerald-500/10 via-blue-500/10 to-purple-500/10 border border-emerald-500/20 rounded-2xl p-6 backdrop-blur-sm">
-            <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-xl flex items-center justify-center">
-                  <Wallet className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-center sm:text-left">
-                  <h3 className="text-lg font-semibold text-white">Wallet Connected!</h3>
-                  <p className="text-slate-400 text-sm">You're ready to participate in airdrops and earn rewards</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <div className="text-center">
-                  <p className="text-emerald-400 font-bold text-lg">{walletState.balance ? parseFloat(walletState.balance).toFixed(3) : '0'} ETH</p>
-                  <p className="text-slate-400 text-xs">Balance</p>
-                </div>
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Enhanced Filters */}
       <div className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-2xl sm:rounded-3xl p-4 sm:p-8 mb-8 sm:mb-12 shadow-2xl mx-4 sm:mx-0">

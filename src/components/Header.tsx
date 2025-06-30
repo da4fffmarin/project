@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import { useWallet } from '../hooks/useWallet';
-import { Settings, User, Coins, Shield, Wallet, LogOut, Gift, HelpCircle, Trophy, Menu, X, Home, Star, Copy } from 'lucide-react';
+import { Settings, User, Coins, Wallet, LogOut, Gift, HelpCircle, Trophy, Menu, X, Home, Star, Copy } from 'lucide-react';
 
 export default function Header() {
   const { user, isAdmin, setIsAdmin } = useApp();
@@ -12,16 +12,6 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleAdminToggle = () => {
-    if (isAdmin) {
-      setIsAdmin(false);
-      navigate('/');
-    } else {
-      setIsAdmin(true);
-      navigate('/admin');
-    }
-  };
-
   const copyAddress = () => {
     if (walletState.address) {
       navigator.clipboard.writeText(walletState.address);
@@ -30,7 +20,7 @@ export default function Header() {
     }
   };
 
-  // Простая навигация для обычных пользователей
+  // Простая навигация для обычных пользователей (убрали кнопку админ панели)
   const userNavItems = [
     { id: '/', label: 'Airdrops', icon: Home },
     { id: '/rewards', label: 'Rewards', icon: Gift },
@@ -41,7 +31,7 @@ export default function Header() {
   // Навигация для админов
   const adminNavItems = [
     { id: '/', label: 'Airdrops', icon: Coins },
-    { id: '/admin', label: 'Admin Panel', icon: Shield }
+    { id: '/admin', label: 'Admin Panel', icon: Settings }
   ];
 
   const navItems = isAdmin ? adminNavItems : userNavItems;
@@ -103,11 +93,13 @@ export default function Header() {
 
           {/* Desktop User Actions */}
           <div className="hidden lg:flex items-center space-x-3 xl:space-x-4">
-            {/* Enhanced Wallet Connection */}
+            {/* Объединенный блок кошелька и поинтов */}
             {walletState.isConnected ? (
               <div className="flex items-center space-x-3 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl px-3 xl:px-4 py-2">
                 <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                <div className="text-right">
+                
+                {/* Адрес кошелька */}
+                <div className="text-center">
                   <div className="flex items-center space-x-2">
                     <p className="text-sm font-medium text-white">{formatAddress(walletState.address!)}</p>
                     <button
@@ -125,6 +117,19 @@ export default function Header() {
                   </div>
                   <p className="text-xs text-slate-400">Connected</p>
                 </div>
+
+                {/* Разделитель */}
+                <div className="w-px h-8 bg-slate-600" />
+
+                {/* Баланс поинтов */}
+                <div className="text-center">
+                  <div className="flex items-center space-x-1">
+                    <Star className="w-3 h-3 text-emerald-400" />
+                    <p className="text-sm font-bold text-emerald-400">{user.totalPoints.toLocaleString()}</p>
+                  </div>
+                  <p className="text-xs text-emerald-300">Points</p>
+                </div>
+
                 <button
                   onClick={disconnectWallet}
                   className="p-1 text-slate-400 hover:text-red-400 transition-colors"
@@ -142,23 +147,10 @@ export default function Header() {
                 <span className="font-medium text-sm xl:text-base">Connect</span>
               </button>
             )}
-
-            {/* Enhanced Points Display - only for regular users */}
-            {walletState.isConnected && !isAdmin && (
-              <div className="flex items-center space-x-3 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-xl px-3 xl:px-4 py-2">
-                <div className="p-1 bg-emerald-500/20 rounded-lg">
-                  <Star className="w-4 h-4 text-emerald-400" />
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-emerald-400">{user.totalPoints.toLocaleString()}</p>
-                  <p className="text-xs text-emerald-300">Points</p>
-                </div>
-              </div>
-            )}
             
             {/* Action Buttons */}
             <div className="flex items-center space-x-2">
-              {/* Profile Button - only for regular users */}
+              {/* Profile Button - только для обычных пользователей */}
               {!isAdmin && (
                 <button
                   onClick={() => navigate('/profile')}
@@ -172,7 +164,7 @@ export default function Header() {
                 </button>
               )}
 
-              {/* Settings Button - only for admins */}
+              {/* Settings Button - только для админов */}
               {isAdmin && (
                 <button
                   onClick={() => navigate('/settings')}
@@ -186,17 +178,20 @@ export default function Header() {
                 </button>
               )}
 
-              <button
-                onClick={handleAdminToggle}
-                className={`p-2 xl:p-3 rounded-xl transition-all duration-300 ${
-                  isAdmin 
-                    ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/25 scale-105' 
-                    : 'bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600'
-                }`}
-                title={isAdmin ? 'Admin Mode' : 'User Mode'}
-              >
-                {isAdmin ? <Shield className="w-4 xl:w-5 h-4 xl:h-5" /> : <User className="w-4 xl:w-5 h-4 xl:h-5" />}
-              </button>
+              {/* Скрытая кнопка переключения админ режима (только по секретному URL) */}
+              {window.location.search.includes('admin=secret') && (
+                <button
+                  onClick={() => setIsAdmin(!isAdmin)}
+                  className={`p-2 xl:p-3 rounded-xl transition-all duration-300 ${
+                    isAdmin 
+                      ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/25 scale-105' 
+                      : 'bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600'
+                  }`}
+                  title={isAdmin ? 'Admin Mode' : 'User Mode'}
+                >
+                  {isAdmin ? <Settings className="w-4 xl:w-5 h-4 xl:h-5" /> : <User className="w-4 xl:w-5 h-4 xl:h-5" />}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -241,12 +236,13 @@ export default function Header() {
                       </div>
                       <p className="text-slate-400 text-sm">Connected</p>
                     </div>
-                    {!isAdmin && (
-                      <div className="text-right">
+                    <div className="text-right">
+                      <div className="flex items-center space-x-1">
+                        <Star className="w-3 h-3 text-emerald-400" />
                         <p className="text-emerald-400 font-bold">{user.totalPoints.toLocaleString()}</p>
-                        <p className="text-slate-400 text-sm">Points</p>
                       </div>
-                    )}
+                      <p className="text-slate-400 text-sm">Points</p>
+                    </div>
                   </div>
                   <button
                     onClick={disconnectWallet}
@@ -301,20 +297,23 @@ export default function Header() {
                   </button>
                 )}
 
-                <button
-                  onClick={() => {
-                    handleAdminToggle();
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`flex-1 py-3 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 ${
-                    isAdmin 
-                      ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/25' 
-                      : 'bg-slate-800/50 text-slate-300 hover:text-white'
-                  }`}
-                >
-                  {isAdmin ? <Shield className="w-5 h-5" /> : <User className="w-5 h-5" />}
-                  <span>{isAdmin ? 'Admin' : 'User'}</span>
-                </button>
+                {/* Скрытая кнопка переключения админ режима в мобильном меню */}
+                {window.location.search.includes('admin=secret') && (
+                  <button
+                    onClick={() => {
+                      setIsAdmin(!isAdmin);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`flex-1 py-3 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 ${
+                      isAdmin 
+                        ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/25' 
+                        : 'bg-slate-800/50 text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    {isAdmin ? <Settings className="w-5 h-5" /> : <User className="w-5 h-5" />}
+                    <span>{isAdmin ? 'Admin' : 'User'}</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
