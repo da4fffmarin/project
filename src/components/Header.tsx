@@ -2,12 +2,13 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import { useWallet } from '../hooks/useWallet';
-import { Settings, User, Coins, Shield, Wallet, LogOut, Gift, HelpCircle, Trophy, Menu, X, Home } from 'lucide-react';
+import { Settings, User, Coins, Shield, Wallet, LogOut, Gift, HelpCircle, Trophy, Menu, X, Home, Star, Copy } from 'lucide-react';
 
 export default function Header() {
   const { user, isAdmin, setIsAdmin } = useApp();
   const { walletState, connectWallet, disconnectWallet, formatAddress } = useWallet();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [showCopyTooltip, setShowCopyTooltip] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -18,6 +19,14 @@ export default function Header() {
     } else {
       setIsAdmin(true);
       navigate('/admin');
+    }
+  };
+
+  const copyAddress = () => {
+    if (walletState.address) {
+      navigator.clipboard.writeText(walletState.address);
+      setShowCopyTooltip(true);
+      setTimeout(() => setShowCopyTooltip(false), 2000);
     }
   };
 
@@ -94,13 +103,27 @@ export default function Header() {
 
           {/* Desktop User Actions */}
           <div className="hidden lg:flex items-center space-x-3 xl:space-x-4">
-            {/* Wallet Connection */}
+            {/* Enhanced Wallet Connection */}
             {walletState.isConnected ? (
               <div className="flex items-center space-x-3 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl px-3 xl:px-4 py-2">
                 <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
                 <div className="text-right">
-                  <p className="text-sm font-medium text-white">{formatAddress(walletState.address!)}</p>
-                  <p className="text-xs text-slate-400">{parseFloat(walletState.balance!).toFixed(3)} ETH</p>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-sm font-medium text-white">{formatAddress(walletState.address!)}</p>
+                    <button
+                      onClick={copyAddress}
+                      className="relative p-1 text-slate-400 hover:text-white transition-colors"
+                      title="Copy address"
+                    >
+                      <Copy className="w-3 h-3" />
+                      {showCopyTooltip && (
+                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-slate-700 text-white text-xs rounded whitespace-nowrap">
+                          Copied!
+                        </div>
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-400">Connected</p>
                 </div>
                 <button
                   onClick={disconnectWallet}
@@ -120,12 +143,15 @@ export default function Header() {
               </button>
             )}
 
-            {/* Points Display - only for regular users */}
+            {/* Enhanced Points Display - only for regular users */}
             {walletState.isConnected && !isAdmin && (
-              <div className="flex items-center space-x-3 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl px-3 xl:px-4 py-2">
+              <div className="flex items-center space-x-3 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-xl px-3 xl:px-4 py-2">
+                <div className="p-1 bg-emerald-500/20 rounded-lg">
+                  <Star className="w-4 h-4 text-emerald-400" />
+                </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-emerald-400">{user.totalPoints}</p>
-                  <p className="text-xs text-slate-400">Points</p>
+                  <p className="text-sm font-bold text-emerald-400">{user.totalPoints.toLocaleString()}</p>
+                  <p className="text-xs text-emerald-300">Points</p>
                 </div>
               </div>
             )}
@@ -204,12 +230,20 @@ export default function Header() {
                 <div className="bg-slate-800/50 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="text-white font-medium">{formatAddress(walletState.address!)}</p>
-                      <p className="text-slate-400 text-sm">{parseFloat(walletState.balance!).toFixed(3)} ETH</p>
+                      <div className="flex items-center space-x-2">
+                        <p className="text-white font-medium">{formatAddress(walletState.address!)}</p>
+                        <button
+                          onClick={copyAddress}
+                          className="p-1 text-slate-400 hover:text-white transition-colors"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <p className="text-slate-400 text-sm">Connected</p>
                     </div>
                     {!isAdmin && (
                       <div className="text-right">
-                        <p className="text-emerald-400 font-bold">{user.totalPoints}</p>
+                        <p className="text-emerald-400 font-bold">{user.totalPoints.toLocaleString()}</p>
                         <p className="text-slate-400 text-sm">Points</p>
                       </div>
                     )}

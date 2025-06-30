@@ -3,6 +3,7 @@ import { useApp } from '../contexts/AppContext';
 import { useWallet } from '../hooks/useWallet';
 import { Airdrop } from '../types';
 import AirdropCard from './AirdropCard';
+import WelcomeBonusPopup from './WelcomeBonusPopup';
 import { Search, Filter, TrendingUp, Calendar, Trophy, Sparkles, Zap, Wallet, AlertCircle, Star, Globe, Users } from 'lucide-react';
 
 export default function AirdropList() {
@@ -35,6 +36,9 @@ export default function AirdropList() {
 
   return (
     <div className="max-w-7xl mx-auto">
+      {/* Welcome Bonus Popup */}
+      <WelcomeBonusPopup />
+
       {/* Enhanced Hero Section */}
       <div className="text-center mb-12 sm:mb-16 relative">
         {/* Animated background elements */}
