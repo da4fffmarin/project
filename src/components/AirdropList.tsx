@@ -183,51 +183,23 @@ export default function AirdropList() {
         <p className="text-lg text-slate-300 mb-6 max-w-2xl mx-auto px-4">
           Complete tasks and earn rewards from promising cryptocurrency projects
         </p>
-
-        {/* Points Exchange Rate Info */}
+        
+        {/* Compact Exchange Rate Info */}
         <div className="mb-8 px-4">
-          <div className="max-w-lg mx-auto bg-gradient-to-r from-emerald-500/10 via-blue-500/10 to-purple-500/10 border border-emerald-500/20 rounded-2xl p-6 backdrop-blur-sm">
-            <div className="flex items-center justify-center space-x-3 mb-4">
-              <div className="p-2 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 rounded-xl">
-                <DollarSign className="w-5 h-5 text-emerald-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-white">Points Exchange Rate</h3>
-              <div className="p-2 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl">
-                <Coins className="w-5 h-5 text-blue-400" />
-              </div>
+          <div className="inline-flex items-center space-x-3 px-4 py-2 bg-gradient-to-r from-emerald-500/10 to-blue-500/10 border border-emerald-500/20 rounded-full backdrop-blur-sm">
+            <div className="flex items-center space-x-1">
+              <Star className="w-4 h-4 text-yellow-400" />
+              <span className="text-white font-semibold">100 Points</span>
             </div>
-            
-            <div className="flex items-center justify-center space-x-4 mb-4">
-              <div className="text-center">
-                <div className="flex items-center justify-center space-x-2 mb-1">
-                  <Star className="w-5 h-5 text-yellow-400" />
-                  <span className="text-2xl font-bold text-white">100</span>
-                  <span className="text-slate-300">Points</span>
-                </div>
-                <p className="text-slate-400 text-sm">Earned from tasks</p>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <ArrowRight className="w-5 h-5 text-slate-400" />
-                <span className="text-slate-400 font-medium">=</span>
-                <ArrowRight className="w-5 h-5 text-slate-400" />
-              </div>
-              
-              <div className="text-center">
-                <div className="flex items-center justify-center space-x-2 mb-1">
-                  <DollarSign className="w-5 h-5 text-emerald-400" />
-                  <span className="text-2xl font-bold text-emerald-400">1</span>
-                  <span className="text-slate-300">USDC</span>
-                </div>
-                <p className="text-slate-400 text-sm">Real money value</p>
-              </div>
+            <ArrowRight className="w-4 h-4 text-slate-400" />
+            <div className="flex items-center space-x-1">
+              <DollarSign className="w-4 h-4 text-emerald-400" />
+              <span className="text-emerald-400 font-semibold">1 USDC</span>
             </div>
-
-            <div className="flex items-center justify-center space-x-2 text-sm">
-              <Info className="w-4 h-4 text-blue-400" />
-              <span className="text-blue-300">
-                Minimum withdrawal: <span className="font-semibold text-white">100 points</span> ($1 USDC)
-              </span>
+            <div className="w-px h-4 bg-slate-600" />
+            <div className="flex items-center space-x-1">
+              <Info className="w-3 h-3 text-blue-400" />
+              <span className="text-blue-300 text-sm">Min: $1</span>
             </div>
           </div>
         </div>
