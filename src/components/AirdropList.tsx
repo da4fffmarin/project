@@ -24,7 +24,11 @@ import {
   Grid3X3,
   List,
   SortAsc,
-  SortDesc
+  SortDesc,
+  DollarSign,
+  Coins,
+  ArrowRight,
+  Info
 } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 12; // Количество аирдропов на странице
@@ -179,26 +183,89 @@ export default function AirdropList() {
         <p className="text-lg text-slate-300 mb-6 max-w-2xl mx-auto px-4">
           Complete tasks and earn rewards from promising cryptocurrency projects
         </p>
+
+        {/* Points Exchange Rate Info */}
+        <div className="mb-8 px-4">
+          <div className="max-w-lg mx-auto bg-gradient-to-r from-emerald-500/10 via-blue-500/10 to-purple-500/10 border border-emerald-500/20 rounded-2xl p-6 backdrop-blur-sm">
+            <div className="flex items-center justify-center space-x-3 mb-4">
+              <div className="p-2 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 rounded-xl">
+                <DollarSign className="w-5 h-5 text-emerald-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">Points Exchange Rate</h3>
+              <div className="p-2 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl">
+                <Coins className="w-5 h-5 text-blue-400" />
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-center space-x-4 mb-4">
+              <div className="text-center">
+                <div className="flex items-center justify-center space-x-2 mb-1">
+                  <Star className="w-5 h-5 text-yellow-400" />
+                  <span className="text-2xl font-bold text-white">100</span>
+                  <span className="text-slate-300">Points</span>
+                </div>
+                <p className="text-slate-400 text-sm">Earned from tasks</p>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <ArrowRight className="w-5 h-5 text-slate-400" />
+                <span className="text-slate-400 font-medium">=</span>
+                <ArrowRight className="w-5 h-5 text-slate-400" />
+              </div>
+              
+              <div className="text-center">
+                <div className="flex items-center justify-center space-x-2 mb-1">
+                  <DollarSign className="w-5 h-5 text-emerald-400" />
+                  <span className="text-2xl font-bold text-emerald-400">1</span>
+                  <span className="text-slate-300">USDC</span>
+                </div>
+                <p className="text-slate-400 text-sm">Real money value</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center space-x-2 text-sm">
+              <Info className="w-4 h-4 text-blue-400" />
+              <span className="text-blue-300">
+                Minimum withdrawal: <span className="font-semibold text-white">100 points</span> ($1 USDC)
+              </span>
+            </div>
+          </div>
+        </div>
         
         {/* Enhanced Stats with Platform Data */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8 px-4 max-w-4xl mx-auto">
-          <div className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-xl p-4">
+          <div className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-xl p-4 hover:border-emerald-500/30 transition-all duration-300 hover:scale-105">
+            <div className="flex items-center justify-center mb-2">
+              <TrendingUp className="w-5 h-5 text-emerald-400" />
+            </div>
             <p className="text-xl font-bold text-emerald-400">{activeAirdropsCount}</p>
             <p className="text-slate-400 text-sm">Active</p>
           </div>
-          <div className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-xl p-4">
+          <div className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-xl p-4 hover:border-yellow-500/30 transition-all duration-300 hover:scale-105">
+            <div className="flex items-center justify-center mb-2">
+              <Trophy className="w-5 h-5 text-yellow-400" />
+            </div>
             <p className="text-xl font-bold text-yellow-400">${(totalRewards / 1000000).toFixed(1)}M</p>
             <p className="text-slate-400 text-sm">Rewards</p>
           </div>
-          <div className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-xl p-4">
+          <div className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-xl p-4 hover:border-blue-500/30 transition-all duration-300 hover:scale-105">
+            <div className="flex items-center justify-center mb-2">
+              <Calendar className="w-5 h-5 text-blue-400" />
+            </div>
             <p className="text-xl font-bold text-blue-400">{airdrops.length}</p>
             <p className="text-slate-400 text-sm">Projects</p>
           </div>
-          <div className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-xl p-4">
+          <div className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-xl p-4 hover:border-purple-500/30 transition-all duration-300 hover:scale-105">
+            <div className="flex items-center justify-center mb-2">
+              <Users className="w-5 h-5 text-purple-400" />
+            </div>
             <p className="text-xl font-bold text-purple-400">{totalUsers > 0 ? `${Math.floor(totalUsers / 1000)}K+` : '50K+'}</p>
             <p className="text-slate-400 text-sm">Active Users</p>
           </div>
-          <div className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-xl p-4">
+          <div className="bg-slate-800/30 backdrop-blur-xl border border-slate-700/50 rounded-xl p-4 hover:border-emerald-500/30 transition-all duration-300 hover:scale-105">
+            <div className="flex items-center justify-center mb-2">
+              <DollarSign className="w-5 h-5 text-emerald-400" />
+            </div>
             <p className="text-xl font-bold text-emerald-400">$2.5M+</p>
             <p className="text-slate-400 text-sm">Distributed</p>
           </div>
