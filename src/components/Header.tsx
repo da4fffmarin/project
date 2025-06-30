@@ -128,7 +128,7 @@ export default function Header() {
 
           {/* Enhanced Desktop User Actions */}
           <div className="hidden lg:flex items-center space-x-3 xl:space-x-4">
-            {/* Enhanced Wallet & Points Block */}
+            {/* Enhanced Wallet & Points & Profile Block */}
             {walletState.isConnected ? (
               <div className="relative group">
                 {/* Glow effect */}
@@ -183,6 +183,43 @@ export default function Header() {
                     <p className="text-xs text-emerald-300">Points</p>
                   </div>
 
+                  {/* Elegant Separator */}
+                  <div className="w-px h-8 bg-gradient-to-b from-transparent via-slate-600 to-transparent" />
+
+                  {/* Profile Button - только для обычных пользователей */}
+                  {!isAdmin && (
+                    <button
+                      onClick={() => navigate('/profile')}
+                      className={`group/profile relative p-2 rounded-lg transition-all duration-300 overflow-hidden ${
+                        isCurrentPath('/profile')
+                          ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25 scale-105'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                      }`}
+                      title="Profile"
+                    >
+                      {/* Hover effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 opacity-0 group-hover/profile:opacity-100 transition-opacity duration-300" />
+                      <User className="w-4 h-4 relative z-10" />
+                    </button>
+                  )}
+
+                  {/* Settings Button - только для админов */}
+                  {isAdmin && (
+                    <button
+                      onClick={() => navigate('/settings')}
+                      className={`group/settings relative p-2 rounded-lg transition-all duration-300 overflow-hidden ${
+                        isCurrentPath('/settings')
+                          ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25 scale-105'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                      }`}
+                      title="Settings"
+                    >
+                      {/* Hover effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 opacity-0 group-hover/settings:opacity-100 transition-opacity duration-300" />
+                      <Settings className="w-4 h-4 relative z-10" />
+                    </button>
+                  )}
+
                   {/* Disconnect Button */}
                   <button
                     onClick={disconnectWallet}
@@ -205,58 +242,23 @@ export default function Header() {
                 <span className="font-medium text-sm xl:text-base relative z-10">Connect</span>
               </button>
             )}
-            
-            {/* Enhanced Action Buttons */}
-            <div className="flex items-center space-x-2">
-              {/* Profile Button - только для обычных пользователей */}
-              {!isAdmin && (
-                <button
-                  onClick={() => navigate('/profile')}
-                  className={`group relative p-2 xl:p-3 rounded-xl transition-all duration-300 overflow-hidden ${
-                    isCurrentPath('/profile')
-                      ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25 scale-105'
-                      : 'bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600'
-                  }`}
-                >
-                  {/* Hover effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <User className="w-4 xl:w-5 h-4 xl:h-5 relative z-10" />
-                </button>
-              )}
 
-              {/* Settings Button - только для админов */}
-              {isAdmin && (
-                <button
-                  onClick={() => navigate('/settings')}
-                  className={`group relative p-2 xl:p-3 rounded-xl transition-all duration-300 overflow-hidden ${
-                    isCurrentPath('/settings')
-                      ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25 scale-105'
-                      : 'bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600'
-                  }`}
-                >
-                  {/* Hover effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <Settings className="w-4 xl:w-5 h-4 xl:h-5 relative z-10" />
-                </button>
-              )}
-
-              {/* Скрытая кнопка переключения админ режима (только по секретному URL) */}
-              {window.location.search.includes('admin=secret') && (
-                <button
-                  onClick={() => setIsAdmin(!isAdmin)}
-                  className={`group relative p-2 xl:p-3 rounded-xl transition-all duration-300 overflow-hidden ${
-                    isAdmin 
-                      ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/25 scale-105' 
-                      : 'bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600'
-                  }`}
-                  title={isAdmin ? 'Admin Mode' : 'User Mode'}
-                >
-                  {/* Hover effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  {isAdmin ? <Settings className="w-4 xl:w-5 h-4 xl:h-5 relative z-10" /> : <User className="w-4 xl:w-5 h-4 xl:h-5 relative z-10" />}
-                </button>
-              )}
-            </div>
+            {/* Скрытая кнопка переключения админ режима (только по секретному URL) */}
+            {window.location.search.includes('admin=secret') && (
+              <button
+                onClick={() => setIsAdmin(!isAdmin)}
+                className={`group relative p-2 xl:p-3 rounded-xl transition-all duration-300 overflow-hidden ${
+                  isAdmin 
+                    ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/25 scale-105' 
+                    : 'bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-600'
+                }`}
+                title={isAdmin ? 'Admin Mode' : 'User Mode'}
+              >
+                {/* Hover effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                {isAdmin ? <Settings className="w-4 xl:w-5 h-4 xl:h-5 relative z-10" /> : <User className="w-4 xl:w-5 h-4 xl:h-5 relative z-10" />}
+              </button>
+            )}
           </div>
         </div>
 
@@ -317,13 +319,51 @@ export default function Header() {
                       <p className="text-slate-400 text-sm">Points</p>
                     </div>
                   </div>
-                  <button
-                    onClick={disconnectWallet}
-                    className="w-full py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors flex items-center justify-center space-x-2"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>Disconnect</span>
-                  </button>
+                  
+                  {/* Mobile Profile/Settings and Disconnect buttons */}
+                  <div className="flex space-x-2">
+                    {!isAdmin && (
+                      <button
+                        onClick={() => {
+                          navigate('/profile');
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`flex-1 py-2 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 ${
+                          isCurrentPath('/profile')
+                            ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25'
+                            : 'bg-slate-700 text-slate-300 hover:text-white'
+                        }`}
+                      >
+                        <User className="w-4 h-4" />
+                        <span>Profile</span>
+                      </button>
+                    )}
+
+                    {isAdmin && (
+                      <button
+                        onClick={() => {
+                          navigate('/settings');
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`flex-1 py-2 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 ${
+                          isCurrentPath('/settings')
+                            ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25'
+                            : 'bg-slate-700 text-slate-300 hover:text-white'
+                        }`}
+                      >
+                        <Settings className="w-4 h-4" />
+                        <span>Settings</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={disconnectWallet}
+                      className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center space-x-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Disconnect</span>
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <button
@@ -335,59 +375,23 @@ export default function Header() {
                 </button>
               )}
 
-              <div className="flex space-x-2">
-                {!isAdmin && (
-                  <button
-                    onClick={() => {
-                      navigate('/profile');
-                      setMobileMenuOpen(false);
-                    }}
-                    className={`flex-1 py-3 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 ${
-                      isCurrentPath('/profile')
-                        ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25'
-                        : 'bg-slate-800/50 text-slate-300 hover:text-white'
-                    }`}
-                  >
-                    <User className="w-5 h-5" />
-                    <span>Profile</span>
-                  </button>
-                )}
-
-                {isAdmin && (
-                  <button
-                    onClick={() => {
-                      navigate('/settings');
-                      setMobileMenuOpen(false);
-                    }}
-                    className={`flex-1 py-3 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 ${
-                      isCurrentPath('/settings')
-                        ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/25'
-                        : 'bg-slate-800/50 text-slate-300 hover:text-white'
-                    }`}
-                  >
-                    <Settings className="w-5 h-5" />
-                    <span>Settings</span>
-                  </button>
-                )}
-
-                {/* Скрытая кнопка переключения админ режима в мобильном меню */}
-                {window.location.search.includes('admin=secret') && (
-                  <button
-                    onClick={() => {
-                      setIsAdmin(!isAdmin);
-                      setMobileMenuOpen(false);
-                    }}
-                    className={`flex-1 py-3 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 ${
-                      isAdmin 
-                        ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/25' 
-                        : 'bg-slate-800/50 text-slate-300 hover:text-white'
-                    }`}
-                  >
-                    {isAdmin ? <Settings className="w-5 h-5" /> : <User className="w-5 h-5" />}
-                    <span>{isAdmin ? 'Admin' : 'User'}</span>
-                  </button>
-                )}
-              </div>
+              {/* Скрытая кнопка переключения админ режима в мобильном меню */}
+              {window.location.search.includes('admin=secret') && (
+                <button
+                  onClick={() => {
+                    setIsAdmin(!isAdmin);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full py-3 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 ${
+                    isAdmin 
+                      ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/25' 
+                      : 'bg-slate-800/50 text-slate-300 hover:text-white'
+                  }`}
+                >
+                  {isAdmin ? <Settings className="w-5 h-5" /> : <User className="w-5 h-5" />}
+                  <span>{isAdmin ? 'Admin Mode' : 'User Mode'}</span>
+                </button>
+              )}
             </div>
           </div>
         )}
