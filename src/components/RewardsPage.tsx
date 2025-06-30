@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { useWallet } from '../hooks/useWallet';
 import { 
@@ -16,7 +16,9 @@ import {
   ArrowRight,
   Info,
   Shield,
-  Globe
+  Globe,
+  Download,
+  Gift
 } from 'lucide-react';
 
 // Поддерживаемые сети для вывода
@@ -60,15 +62,37 @@ const SUPPORTED_NETWORKS = [
 ];
 
 export default function RewardsPage() {
-  const { user, withdrawPoints, withdrawalHistory, addWithdrawal } = useApp();
+  const { user, withdrawPoints, withdrawalHistory, addWithdrawal, updateWithdrawal } = useApp();
   const { walletState } = useWallet();
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [selectedNetwork, setSelectedNetwork] = useState(SUPPORTED_NETWORKS[1]); // Polygon по умолчанию
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [showNetworkSelector, setShowNetworkSelector] = useState(false);
+  const [claimingWithdrawals, setClaimingWithdrawals] = useState<Set<string>>(new Set());
 
   const pointsToUSDC = (points: number) => points / 100;
   const minWithdrawal = 100;
+
+  // Автоматическое обновление статуса выводов
+  useEffect(() => {
+    const pendingWithdrawals = withdrawalHistory.filter(w => w.status === 'pending');
+    
+    pendingWithdrawals.forEach(withdrawal => {
+      const withdrawalTime = new Date(withdrawal.timestamp).getTime();
+      const currentTime = Date.now();
+      const timeDiff = currentTime - withdrawalTime;
+      
+      // Обновляем статус через 3-5 секунд после создания
+      if (timeDiff >= 3000 && timeDiff <= 5000) {
+        setTimeout(() => {
+          updateWithdrawal(withdrawal.id, {
+            status: 'completed',
+            txHash: `0x${Math.random().toString(16).substr(2, 64)}` // Генерируем фейковый хеш транзакции
+          });
+        }, Math.random() * 2000 + 1000); // Случайная задержка 1-3 секунды
+      }
+    });
+  }, [withdrawalHistory, updateWithdrawal]);
 
   const handleWithdraw = async () => {
     const points = parseInt(withdrawAmount);
@@ -95,6 +119,23 @@ export default function RewardsPage() {
       withdrawPoints(points);
       setWithdrawAmount('');
       setIsWithdrawing(false);
+    }, 2000);
+  };
+
+  const handleClaim = async (withdrawalId: string) => {
+    setClaimingWithdrawals(prev => new Set(prev).add(withdrawalId));
+    
+    // Simulate claiming process
+    setTimeout(() => {
+      // В реальном приложении здесь была бы отправка токенов на кошелек
+      setClaimingWithdrawals(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(withdrawalId);
+        return newSet;
+      });
+      
+      // Показываем уведомление об успешном получении
+      alert('🎉 Tokens successfully sent to your wallet!');
     }, 2000);
   };
 
@@ -403,56 +444,82 @@ export default function RewardsPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {withdrawalHistory.map((withdrawal) => (
-              <div
-                key={withdrawal.id}
-                className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-6 bg-slate-700/30 rounded-2xl border border-slate-600/30 hover:border-slate-500/50 transition-all duration-200 space-y-4 sm:space-y-0"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className={`p-3 rounded-xl border ${getStatusColor(withdrawal.status)}`}>
-                    {getStatusIcon(withdrawal.status)}
-                  </div>
-                  <div>
-                    <div className="flex items-center space-x-3 mb-1">
-                      <p className="text-white font-bold text-lg">
-                        {withdrawal.amount.toLocaleString()} points
-                      </p>
-                      <ArrowRight className="w-4 h-4 text-slate-400" />
-                      <p className="text-emerald-400 font-bold text-lg">
-                        ${withdrawal.usdcAmount.toFixed(2)} USDC
+            {withdrawalHistory.map((withdrawal) => {
+              const isClaiming = claimingWithdrawals.has(withdrawal.id);
+              
+              return (
+                <div
+                  key={withdrawal.id}
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-6 bg-slate-700/30 rounded-2xl border border-slate-600/30 hover:border-slate-500/50 transition-all duration-200 space-y-4 sm:space-y-0"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className={`p-3 rounded-xl border ${getStatusColor(withdrawal.status)}`}>
+                      {getStatusIcon(withdrawal.status)}
+                    </div>
+                    <div>
+                      <div className="flex items-center space-x-3 mb-1">
+                        <p className="text-white font-bold text-lg">
+                          {withdrawal.amount.toLocaleString()} points
+                        </p>
+                        <ArrowRight className="w-4 h-4 text-slate-400" />
+                        <p className="text-emerald-400 font-bold text-lg">
+                          ${withdrawal.usdcAmount.toFixed(2)} USDC
+                        </p>
+                      </div>
+                      <p className="text-slate-400 text-sm">
+                        {new Date(withdrawal.timestamp).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                       </p>
                     </div>
-                    <p className="text-slate-400 text-sm">
-                      {new Date(withdrawal.timestamp).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
+                  </div>
+                  
+                  <div className="flex items-center justify-between sm:justify-end space-x-4">
+                    <span className={`px-4 py-2 rounded-xl text-sm font-semibold border ${getStatusColor(withdrawal.status)}`}>
+                      {withdrawal.status === 'completed' ? 'Completed' :
+                       withdrawal.status === 'pending' ? 'Processing' : 'Failed'}
+                    </span>
+                    
+                    {/* Claim Button - показывается только для completed статуса */}
+                    {withdrawal.status === 'completed' && (
+                      <button
+                        onClick={() => handleClaim(withdrawal.id)}
+                        disabled={isClaiming}
+                        className="px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 shadow-lg shadow-emerald-500/25"
+                      >
+                        {isClaiming ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <span>Claiming...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Download className="w-4 h-4" />
+                            <span>Claim</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                    
+                    {withdrawal.txHash && (
+                      <a
+                        href={`https://etherscan.io/tx/${withdrawal.txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 text-slate-400 hover:text-white transition-colors"
+                        title="View on Explorer"
+                      >
+                        <ExternalLink className="w-5 h-5" />
+                      </a>
+                    )}
                   </div>
                 </div>
-                
-                <div className="flex items-center justify-between sm:justify-end space-x-4">
-                  <span className={`px-4 py-2 rounded-xl text-sm font-semibold border ${getStatusColor(withdrawal.status)}`}>
-                    {withdrawal.status === 'completed' ? 'Completed' :
-                     withdrawal.status === 'pending' ? 'Processing' : 'Failed'}
-                  </span>
-                  {withdrawal.txHash && (
-                    <a
-                      href={`https://etherscan.io/tx/${withdrawal.txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 text-slate-400 hover:text-white transition-colors"
-                      title="View on Explorer"
-                    >
-                      <ExternalLink className="w-5 h-5" />
-                    </a>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
