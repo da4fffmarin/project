@@ -15,18 +15,20 @@ import {
   TrendingUp,
   Target,
   Clock,
-  Shield,
   Settings,
   LogOut,
   Camera,
   Mail,
   Phone,
   MapPin,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Gift,
+  Zap,
+  CheckCircle2
 } from 'lucide-react';
 
 export default function UserProfile() {
-  const { user, updateUser } = useApp();
+  const { user, updateUser, airdrops } = useApp();
   const { walletState, disconnectWallet, formatAddress } = useWallet();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
@@ -68,35 +70,60 @@ export default function UserProfile() {
   const joinDate = new Date(user.joinedAt);
   const daysSinceJoin = Math.floor((Date.now() - joinDate.getTime()) / (1000 * 60 * 60 * 24));
 
+  // Quick actions for easy navigation
+  const quickActions = [
+    {
+      title: 'Find Airdrops',
+      description: 'Browse available airdrops',
+      icon: Gift,
+      color: 'from-purple-500 to-blue-600',
+      action: () => navigate('/')
+    },
+    {
+      title: 'My Rewards',
+      description: `${user.totalPoints} points earned`,
+      icon: Trophy,
+      color: 'from-emerald-500 to-teal-600',
+      action: () => navigate('/rewards')
+    },
+    {
+      title: 'Leaderboard',
+      description: 'See your ranking',
+      icon: TrendingUp,
+      color: 'from-yellow-500 to-orange-600',
+      action: () => navigate('/leaderboard')
+    }
+  ];
+
   const achievements = [
     { 
       id: 'first_airdrop', 
-      title: 'Первый аирдроп', 
-      description: 'Участие в первом аирдропе',
+      title: 'First Airdrop', 
+      description: 'Joined your first airdrop',
       icon: Star,
       unlocked: completedAirdrops > 0,
       color: 'text-yellow-400'
     },
     { 
       id: 'task_master', 
-      title: 'Мастер задач', 
-      description: 'Выполнено 10+ задач',
+      title: 'Task Master', 
+      description: 'Completed 10+ tasks',
       icon: Target,
       unlocked: totalTasks >= 10,
       color: 'text-purple-400'
     },
     { 
       id: 'point_collector', 
-      title: 'Коллекционер поинтов', 
-      description: '1000+ поинтов заработано',
+      title: 'Point Collector', 
+      description: 'Earned 1000+ points',
       icon: Trophy,
       unlocked: user.totalPoints >= 1000,
       color: 'text-emerald-400'
     },
     { 
       id: 'veteran', 
-      title: 'Ветеран', 
-      description: '30+ дней на платформе',
+      title: 'Veteran', 
+      description: '30+ days on platform',
       icon: Award,
       unlocked: daysSinceJoin >= 30,
       color: 'text-blue-400'
@@ -105,28 +132,28 @@ export default function UserProfile() {
 
   const stats = [
     {
-      label: 'Всего поинтов',
+      label: 'Total Points',
       value: user.totalPoints.toLocaleString(),
       icon: Star,
       color: 'text-yellow-400',
       bgColor: 'bg-yellow-400/10'
     },
     {
-      label: 'Аирдропы',
+      label: 'Airdrops Joined',
       value: completedAirdrops.toString(),
       icon: Trophy,
       color: 'text-purple-400',
       bgColor: 'bg-purple-400/10'
     },
     {
-      label: 'Задачи',
+      label: 'Tasks Completed',
       value: totalTasks.toString(),
       icon: Target,
       color: 'text-emerald-400',
       bgColor: 'bg-emerald-400/10'
     },
     {
-      label: 'Дней активности',
+      label: 'Days Active',
       value: daysSinceJoin.toString(),
       icon: Calendar,
       color: 'text-blue-400',
@@ -136,6 +163,25 @@ export default function UserProfile() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {/* Welcome Message for New Users */}
+      {!walletState.isConnected && (
+        <div className="bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-emerald-500/10 border border-purple-500/20 rounded-3xl p-8 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl mb-4">
+            <Wallet className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-4">Welcome to AirdropHub!</h2>
+          <p className="text-slate-300 mb-6">
+            Connect your wallet to start earning free crypto tokens from airdrops
+          </p>
+          <button
+            onClick={() => navigate('/')}
+            className="px-8 py-4 bg-gradient-to-r from-purple-500 to-blue-600 text-white rounded-xl font-semibold hover:from-purple-600 hover:to-blue-700 transition-all duration-200 shadow-lg shadow-purple-500/25"
+          >
+            Get Started
+          </button>
+        </div>
+      )}
+
       {/* Profile Header */}
       <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-3xl p-8">
         <div className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-8">
@@ -166,13 +212,13 @@ export default function UserProfile() {
               {walletState.isConnected && (
                 <div className="flex items-center space-x-1 px-2 py-1 bg-emerald-400/10 border border-emerald-400/20 rounded-full">
                   <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                  <span className="text-emerald-400 text-xs font-medium">Подключен</span>
+                  <span className="text-emerald-400 text-xs font-medium">Connected</span>
                 </div>
               )}
             </div>
             
             <p className="text-slate-400 mb-4">
-              Участник с {joinDate.toLocaleDateString('ru-RU', { 
+              Member since {joinDate.toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'long', 
                 day: 'numeric' 
@@ -185,15 +231,7 @@ export default function UserProfile() {
                 className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors"
               >
                 <Edit3 className="w-4 h-4" />
-                <span>Редактировать</span>
-              </button>
-              
-              <button
-                onClick={() => navigate('/settings')}
-                className="flex items-center space-x-2 px-4 py-2 bg-slate-600 text-white rounded-xl hover:bg-slate-700 transition-colors"
-              >
-                <Settings className="w-4 h-4" />
-                <span>Настройки</span>
+                <span>Edit Profile</span>
               </button>
 
               {walletState.isConnected && (
@@ -202,7 +240,7 @@ export default function UserProfile() {
                   className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span>Отключить кошелек</span>
+                  <span>Disconnect</span>
                 </button>
               )}
             </div>
@@ -210,11 +248,38 @@ export default function UserProfile() {
         </div>
       </div>
 
+      {/* Quick Actions */}
+      <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+        <h2 className="text-xl font-semibold text-white mb-6">Quick Actions</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {quickActions.map((action, index) => (
+            <button
+              key={index}
+              onClick={action.action}
+              className="group p-4 bg-slate-700/30 rounded-xl hover:bg-slate-700/50 transition-all duration-200 text-left"
+            >
+              <div className="flex items-center space-x-4">
+                <div className={`p-3 bg-gradient-to-br ${action.color} rounded-xl group-hover:scale-110 transition-transform duration-200`}>
+                  <action.icon className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-white font-semibold group-hover:text-purple-300 transition-colors">
+                    {action.title}
+                  </h3>
+                  <p className="text-slate-400 text-sm">{action.description}</p>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Edit Form */}
       {isEditing && (
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-white">Редактирование профиля</h2>
+            <h2 className="text-xl font-semibold text-white">Edit Profile</h2>
             <button
               onClick={handleCancel}
               className="p-2 text-slate-400 hover:text-white transition-colors"
@@ -226,7 +291,7 @@ export default function UserProfile() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Telegram
+                Telegram Username
               </label>
               <div className="relative">
                 <input
@@ -242,7 +307,7 @@ export default function UserProfile() {
 
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Twitter
+                Twitter Username
               </label>
               <div className="relative">
                 <input
@@ -256,9 +321,9 @@ export default function UserProfile() {
               </div>
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Discord
+                Discord Username
               </label>
               <div className="relative">
                 <input
@@ -271,35 +336,6 @@ export default function UserProfile() {
                 <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
               </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Email
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={editData.email}
-                  onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-                  placeholder="email@example.com"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
-                />
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-              </div>
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                О себе
-              </label>
-              <textarea
-                value={editData.bio}
-                onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
-                placeholder="Расскажите о себе..."
-                rows={3}
-                className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
-              />
-            </div>
           </div>
 
           <div className="flex space-x-4 mt-6">
@@ -308,13 +344,13 @@ export default function UserProfile() {
               className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all duration-200"
             >
               <Save className="w-4 h-4" />
-              <span>Сохранить</span>
+              <span>Save Changes</span>
             </button>
             <button
               onClick={handleCancel}
               className="px-6 py-3 bg-slate-600 text-white rounded-xl hover:bg-slate-700 transition-colors"
             >
-              Отмена
+              Cancel
             </button>
           </div>
         </div>
@@ -335,7 +371,7 @@ export default function UserProfile() {
 
       {/* Achievements */}
       <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
-        <h2 className="text-xl font-semibold text-white mb-6">Достижения</h2>
+        <h2 className="text-xl font-semibold text-white mb-6">Achievements</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {achievements.map((achievement) => (
@@ -369,7 +405,7 @@ export default function UserProfile() {
                 </div>
                 {achievement.unlocked && (
                   <div className="text-emerald-400">
-                    <Trophy className="w-5 h-5" />
+                    <CheckCircle2 className="w-5 h-5" />
                   </div>
                 )}
               </div>
@@ -378,86 +414,42 @@ export default function UserProfile() {
         </div>
       </div>
 
-      {/* Wallet Info */}
-      {walletState.isConnected && (
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
-          <h2 className="text-xl font-semibold text-white mb-6">Информация о кошельке</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl">
-                <div>
-                  <p className="text-slate-400 text-sm">Адрес</p>
-                  <p className="text-white font-mono">{formatAddress(walletState.address!)}</p>
-                </div>
-                <Wallet className="w-5 h-5 text-purple-400" />
-              </div>
-              
-              <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl">
-                <div>
-                  <p className="text-slate-400 text-sm">Баланс</p>
-                  <p className="text-white font-semibold">
-                    {parseFloat(walletState.balance!).toFixed(4)} ETH
-                  </p>
-                </div>
-                <TrendingUp className="w-5 h-5 text-emerald-400" />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl">
-                <div>
-                  <p className="text-slate-400 text-sm">Сеть</p>
-                  <p className="text-white font-semibold">
-                    {walletState.chainId === 1 ? 'Ethereum' : 
-                     walletState.chainId === 137 ? 'Polygon' : 
-                     `Chain ${walletState.chainId}`}
-                  </p>
-                </div>
-                <Shield className="w-5 h-5 text-blue-400" />
-              </div>
-              
-              <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl">
-                <div>
-                  <p className="text-slate-400 text-sm">Последняя активность</p>
-                  <p className="text-white font-semibold">
-                    {new Date(user.lastActive).toLocaleDateString('ru-RU')}
-                  </p>
-                </div>
-                <Clock className="w-5 h-5 text-yellow-400" />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Activity Timeline */}
+      {/* Recent Activity */}
       <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
-        <h2 className="text-xl font-semibold text-white mb-6">Последняя активность</h2>
+        <h2 className="text-xl font-semibold text-white mb-6">Recent Activity</h2>
         
         <div className="space-y-4">
-          {Object.entries(user.completedTasks).slice(0, 5).map(([airdropId, tasks], index) => (
-            <div key={airdropId} className="flex items-center space-x-4 p-4 bg-slate-700/20 rounded-xl">
-              <div className="w-2 h-2 bg-emerald-400 rounded-full" />
-              <div className="flex-1">
-                <p className="text-white font-medium">
-                  Выполнено {tasks.length} задач в аирдропе #{airdropId.slice(0, 8)}
-                </p>
-                <p className="text-slate-400 text-sm">
-                  {new Date(Date.now() - index * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU')}
-                </p>
+          {Object.entries(user.completedTasks).slice(0, 5).map(([airdropId, tasks], index) => {
+            const airdrop = airdrops.find(a => a.id === airdropId);
+            return (
+              <div key={airdropId} className="flex items-center space-x-4 p-4 bg-slate-700/20 rounded-xl">
+                <div className="text-2xl">{airdrop?.logo || '🎁'}</div>
+                <div className="flex-1">
+                  <p className="text-white font-medium">
+                    Completed {tasks.length} tasks in {airdrop?.title || 'Airdrop'}
+                  </p>
+                  <p className="text-slate-400 text-sm">
+                    {new Date(Date.now() - index * 24 * 60 * 60 * 1000).toLocaleDateString('en-US')}
+                  </p>
+                </div>
+                <div className="text-emerald-400 font-semibold">
+                  +{tasks.length * 50} points
+                </div>
               </div>
-              <div className="text-emerald-400 font-semibold">
-                +{tasks.length * 50} поинтов
-              </div>
-            </div>
-          ))}
+            );
+          })}
           
           {Object.keys(user.completedTasks).length === 0 && (
             <div className="text-center py-8">
-              <Clock className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-              <p className="text-slate-400">Пока нет активности</p>
-              <p className="text-slate-500 text-sm">Начните участвовать в аирдропах!</p>
+              <Zap className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+              <p className="text-slate-400">No activity yet</p>
+              <p className="text-slate-500 text-sm">Start participating in airdrops to see your activity here!</p>
+              <button
+                onClick={() => navigate('/')}
+                className="mt-4 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-600 text-white rounded-xl hover:from-purple-600 hover:to-blue-700 transition-all duration-200"
+              >
+                Browse Airdrops
+              </button>
             </div>
           )}
         </div>

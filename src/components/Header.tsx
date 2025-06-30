@@ -2,8 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import { useWallet } from '../hooks/useWallet';
-import { Settings, User, Coins, Shield, Wallet, LogOut, Gift, HelpCircle, Trophy, Menu, X, BarChart3, Crown, MessageCircle, Home } from 'lucide-react';
-import NotificationSystem from './NotificationSystem';
+import { Settings, User, Coins, Shield, Wallet, LogOut, Gift, HelpCircle, Trophy, Menu, X, Home } from 'lucide-react';
 
 export default function Header() {
   const { user, isAdmin, setIsAdmin } = useApp();
@@ -22,22 +21,18 @@ export default function Header() {
     }
   };
 
-  // Separate navigation for regular users and admins
+  // Простая навигация для обычных пользователей
   const userNavItems = [
-    { id: '/', label: 'Home', icon: Home },
-    { id: '/dashboard', label: 'Dashboard', icon: User },
+    { id: '/', label: 'Airdrops', icon: Home },
     { id: '/rewards', label: 'Rewards', icon: Gift },
     { id: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-    { id: '/premium', label: 'Premium', icon: Crown },
     { id: '/faq', label: 'FAQ', icon: HelpCircle }
   ];
 
+  // Навигация для админов
   const adminNavItems = [
     { id: '/', label: 'Airdrops', icon: Coins },
-    { id: '/admin', label: 'Admin Panel', icon: Shield },
-    { id: '/analytics', label: 'Analytics', icon: BarChart3 },
-    { id: '/telegram', label: 'Telegram', icon: MessageCircle },
-    { id: '/settings', label: 'Settings', icon: Settings }
+    { id: '/admin', label: 'Admin Panel', icon: Shield }
   ];
 
   const navItems = isAdmin ? adminNavItems : userNavItems;
@@ -66,7 +61,7 @@ export default function Header() {
                 AirdropHub
               </h1>
               <p className="text-xs text-slate-400 font-medium">
-                {isAdmin ? 'Admin Dashboard' : 'Crypto Rewards Platform'}
+                Free Crypto Rewards
               </p>
             </div>
           </div>
@@ -99,9 +94,6 @@ export default function Header() {
 
           {/* Desktop User Actions */}
           <div className="hidden lg:flex items-center space-x-3 xl:space-x-4">
-            {/* Notifications */}
-            <NotificationSystem />
-
             {/* Wallet Connection */}
             {walletState.isConnected ? (
               <div className="flex items-center space-x-3 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl px-3 xl:px-4 py-2">

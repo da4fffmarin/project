@@ -11,12 +11,7 @@ import FAQPage from './components/FAQPage';
 import SecretAdminPanel from './components/SecretAdminPanel';
 import TasksPage from './components/TasksPage';
 import SettingsPage from './components/SettingsPage';
-import AnalyticsDashboard from './components/AnalyticsDashboard';
-import PremiumFeatures from './components/PremiumFeatures';
-import TelegramBot from './components/TelegramBot';
-import ModernTheme from './components/ModernTheme';
 import UserProfile from './components/UserProfile';
-import UserDashboard from './components/UserDashboard';
 import PermissionGuard from './components/PermissionGuard';
 import { useApp } from './contexts/AppContext';
 
@@ -32,13 +27,13 @@ function AirdropTasksRoute() {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12 text-center">
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8">
-          <h1 className="text-2xl font-bold text-white mb-4">Аирдроп не найден</h1>
-          <p className="text-slate-400 mb-6">Аирдроп с ID "{airdropId}" не существует</p>
+          <h1 className="text-2xl font-bold text-white mb-4">Airdrop not found</h1>
+          <p className="text-slate-400 mb-6">The airdrop with ID "{airdropId}" does not exist</p>
           <button
             onClick={() => window.location.href = '/'}
             className="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-600 text-white rounded-xl hover:from-purple-600 hover:to-blue-700 transition-all duration-200"
           >
-            Вернуться к списку аирдропов
+            Back to Airdrops
           </button>
         </div>
       </div>
@@ -97,26 +92,15 @@ function AppContent() {
       <main className="container mx-auto px-4 py-6 sm:py-8 lg:py-12 relative z-10">
         <Routes>
           <Route path="/" element={<AirdropList />} />
-          <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/admin" element={<AdminRoutes />} />
           <Route path="/rewards" element={<RewardsPage onBack={() => window.history.back()} />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
-          <Route path="/analytics" element={
-            <PermissionGuard requiredRole="admin" fallback={<AnalyticsDashboard />}>
-              <AnalyticsDashboard />
-            </PermissionGuard>
-          } />
-          <Route path="/premium" element={<PremiumFeatures />} />
-          <Route path="/telegram" element={
-            <PermissionGuard requiredRole="admin" fallback={<TelegramBot />}>
-              <TelegramBot />
-            </PermissionGuard>
-          } />
-          <Route path="/theme" element={<ModernTheme />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/airdrop" element={<AirdropTasksRoute />} />
+          {/* Redirect old dashboard route to profile */}
+          <Route path="/dashboard" element={<Navigate to="/profile" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -130,22 +114,6 @@ function AppContent() {
         
         {/* Grid pattern overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:50px_50px]" />
-        
-        {/* Animated particles */}
-        <div className="absolute inset-0">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-purple-400/20 rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 3}s`
-              }}
-            />
-          ))}
-        </div>
       </div>
     </div>
   );
