@@ -23,7 +23,6 @@ export default function Header() {
   // Простая навигация для обычных пользователей (убрали кнопку админ панели)
   const userNavItems = [
     { id: '/', label: 'Airdrops', icon: Home },
-    { id: '/rewards', label: 'Rewards', icon: Gift },
     { id: '/leaderboard', label: 'Leaderboard', icon: Trophy },
     { id: '/faq', label: 'FAQ', icon: HelpCircle }
   ];
@@ -41,6 +40,13 @@ export default function Header() {
       return location.pathname === '/' || location.pathname === '';
     }
     return location.pathname === path;
+  };
+
+  // Функция для перехода к rewards через клик на поинты
+  const handlePointsClick = () => {
+    if (walletState.isConnected) {
+      navigate('/rewards');
+    }
   };
 
   return (
@@ -167,21 +173,25 @@ export default function Header() {
                   {/* Elegant Separator */}
                   <div className="w-px h-8 bg-gradient-to-b from-transparent via-slate-600 to-transparent" />
 
-                  {/* Enhanced Points Display */}
-                  <div className="text-center">
+                  {/* Enhanced Points Display - Clickable */}
+                  <button
+                    onClick={handlePointsClick}
+                    className="text-center group/points hover:scale-105 transition-transform duration-200"
+                    title="View Rewards"
+                  >
                     <div className="flex items-center space-x-1">
                       <div className="relative">
-                        <Star className="w-3 h-3 text-emerald-400" />
+                        <Star className="w-3 h-3 text-emerald-400 group-hover/points:text-yellow-400 transition-colors duration-200" />
                         <div className="absolute inset-0 animate-pulse">
                           <Star className="w-3 h-3 text-emerald-300 opacity-50" />
                         </div>
                       </div>
-                      <p className="text-sm font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                      <p className="text-sm font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent group-hover/points:from-yellow-400 group-hover/points:to-orange-400 transition-all duration-200">
                         {user.totalPoints.toLocaleString()}
                       </p>
                     </div>
-                    <p className="text-xs text-emerald-300">Points</p>
-                  </div>
+                    <p className="text-xs text-emerald-300 group-hover/points:text-yellow-300 transition-colors duration-200">Points</p>
+                  </button>
 
                   {/* Elegant Separator */}
                   <div className="w-px h-8 bg-gradient-to-b from-transparent via-slate-600 to-transparent" />
@@ -311,13 +321,19 @@ export default function Header() {
                         <p className="text-slate-400 text-sm">Connected</p>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <button
+                      onClick={() => {
+                        handlePointsClick();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="text-right group"
+                    >
                       <div className="flex items-center space-x-1">
-                        <Star className="w-3 h-3 text-emerald-400" />
-                        <p className="text-emerald-400 font-bold">{user.totalPoints.toLocaleString()}</p>
+                        <Star className="w-3 h-3 text-emerald-400 group-hover:text-yellow-400 transition-colors" />
+                        <p className="text-emerald-400 font-bold group-hover:text-yellow-400 transition-colors">{user.totalPoints.toLocaleString()}</p>
                       </div>
-                      <p className="text-slate-400 text-sm">Points</p>
-                    </div>
+                      <p className="text-slate-400 text-sm group-hover:text-yellow-300 transition-colors">Points</p>
+                    </button>
                   </div>
                   
                   {/* Mobile Profile/Settings and Disconnect buttons */}

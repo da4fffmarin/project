@@ -9,10 +9,7 @@ import {
   Heart, 
   ExternalLink,
   Shield,
-  FileText,
-  HelpCircle,
-  Zap,
-  Star
+  Zap
 } from 'lucide-react';
 
 export default function Footer() {
@@ -48,7 +45,6 @@ export default function Footer() {
 
   const quickLinks = [
     { name: 'Airdrops', path: '/' },
-    { name: 'Rewards', path: '/rewards' },
     { name: 'Leaderboard', path: '/leaderboard' },
     { name: 'FAQ', path: '/faq' }
   ];
@@ -60,7 +56,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="relative bg-gradient-to-b from-slate-900 to-black border-t border-slate-700/50 mt-16">
+    <footer className="relative bg-gradient-to-r from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border-t border-slate-700/50 mt-16">
       {/* Subtle background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-0 left-1/4 w-32 h-32 bg-purple-500/3 rounded-full blur-2xl animate-pulse" />
@@ -69,10 +65,10 @@ export default function Footer() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
-        <div className="py-8 lg:py-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="py-8 lg:py-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Brand Section */}
-            <div className="lg:col-span-1">
+            <div>
               <div className="flex items-center space-x-3 mb-4">
                 <div className="relative">
                   <div className="w-10 h-10 bg-gradient-to-br from-purple-500 via-blue-600 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
@@ -146,28 +142,6 @@ export default function Footer() {
                   </li>
                 ))}
               </ul>
-            </div>
-
-            {/* Platform Stats */}
-            <div>
-              <h4 className="text-white font-semibold mb-4 flex items-center space-x-2">
-                <Star className="w-4 h-4 text-yellow-400" />
-                <span>Platform</span>
-              </h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Active Users:</span>
-                  <span className="text-white font-semibold">50K+</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Rewards:</span>
-                  <span className="text-white font-semibold">$2.5M+</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Projects:</span>
-                  <span className="text-white font-semibold">500+</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
